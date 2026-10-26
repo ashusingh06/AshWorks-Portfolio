@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="avatarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E50914"/>
+      <stop offset="100%" stop-color="#80050b"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="16" fill="url(#avatarGrad)"/>
+  <!-- Sleek Profile Icon -->
+  <g fill="#FFFFFF" transform="translate(100, 100)">
+    <circle cx="0" cy="-28" r="34"/>
+    <path d="M-55 58 C-55 24, -28 14, 0 14 C28 14, 55 24, 55 58 Z"/>
+  </g>
+</svg>

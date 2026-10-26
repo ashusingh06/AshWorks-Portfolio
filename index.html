@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AshWorks | Cinematic Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=20261025_17" />
+  <link rel="stylesheet" href="css/intro.css?v=20261025_05" />
+  <style id="storyEduCriticalStyle">
+    .story-page-content h3.story-edu-title,
+    .story-edu-card .story-edu-title,
+    h3.story-edu-title {
+      color: #ffffff !important;
+    }
+    .story-page-content .story-edu-degree,
+    .story-edu-card .story-edu-degree,
+    div.story-edu-degree {
+      color: #ffffff !important;
+    }
+  </style>
+  <style id="antiFlickerStyle">
+    body {
+      opacity: 0;
+      transition: opacity 0.12s ease-in-out;
+    }
+  </style>
+  <script src="js/default-data.js?v=20261025_14"></script>
+  <script>
+    (function() {
+      var p = window.location.pathname.toLowerCase();
+      var h = window.location.hash.toLowerCase();
+      var s = window.location.search.toLowerCase();
+      if (p.endsWith('/ceo') || p.endsWith('/ceo/') || h === '#ceo' || s === '?ceo' || s.includes('route=ceo')) {
+        window.location.replace('ceo.html');
+      }
+      try {
+        // Clear broken cached versions and force-sync with DEFAULT_PORTFOLIO_DATA
+        if (window.DEFAULT_PORTFOLIO_DATA) {
+          var raw = localStorage.getItem('comrade_portfolio_data');
+          var parsed = raw ? JSON.parse(raw) : null;
+          var hasValidEp = parsed && parsed.journey && Array.isArray(parsed.journey.seasons) && parsed.journey.seasons.some(function(s) { return !s.isComingSoon && Array.isArray(s.episodes) && s.episodes.length > 0; });
+          var hasValidAb = parsed && parsed.about && Array.isArray(parsed.about.introLines) && parsed.about.introLines.length > 0;
+          var isStaleHi = parsed && parsed.about && Array.isArray(parsed.about.introLines) && parsed.about.introLines.some(function(l) { return l === 'hi'; });
+          var isStaleEp = parsed && parsed.journey && Array.isArray(parsed.journey.seasons) && parsed.journey.seasons.some(function(s) { return Array.isArray(s.episodes) && s.episodes.some(function(e) { return e.title === '11' || e.title === '1'; }); });
+          var defTime = window.DEFAULT_PORTFOLIO_DATA.updatedAt ? new Date(window.DEFAULT_PORTFOLIO_DATA.updatedAt).getTime() : 0;
+          var curTime = parsed && parsed.updatedAt ? new Date(parsed.updatedAt).getTime() : 0;
+          if (!hasValidEp || !hasValidAb || !parsed || isStaleHi || isStaleEp || (defTime > curTime)) {
+            parsed = JSON.parse(JSON.stringify(window.DEFAULT_PORTFOLIO_DATA));
+            try { localStorage.setItem('comrade_portfolio_data', JSON.stringify(parsed)); } catch(e){}
+          }
+          window.__FAST_DATA__ = parsed;
+
+          // Also purge stale IndexedDB
+          try {
+            var idbReq = indexedDB.open('comrade_portfolio_db', 1);
+            idbReq.onsuccess = function(ev) {
+              var db = ev.target.result;
+              if (db && db.objectStoreNames.contains('store')) {
+                var tx = db.transaction('store', 'readwrite');
+                tx.objectStore('store').put(parsed, 'comrade_portfolio_data');
+              }
+            };
+          } catch(idbErr) {}
+        }
+      } catch(e) {}
+
+      window.__REVEAL_PAGE__ = function() {
+        var el = document.getElementById('antiFlickerStyle');
+        if (el) el.remove();
+        if (document.body) document.body.style.opacity = '1';
+      };
+      // Guaranteed safety reveal after 120ms max
+      setTimeout(window.__REVEAL_PAGE__, 120);
+    })();
+  </script>
+</head>
+<body>
+  <!-- Custom Red Dot Cursor Elements -->
+  <div class="custom-cursor-glow" id="cursorGlow"></div>
+  <div class="custom-cursor-ring" id="cursorRing"></div>
+  <div class="custom-cursor-dot" id="cursorDot"></div>
+
+  <!-- ================= 0. CINEMATIC INTRO OPENING (MERGED) ================= -->
+  <div id="introOverlay">
+    <div class="vignette"></div>
+    <div class="flash-overlay" id="flash"></div>
+    <canvas class="ribbon-canvas" id="ribbonCanvas"></canvas>
+
+    <!-- Solid Initial Black Overlay: "A COMRADE ORIGINAL" (Plays for first 1.0s) -->
+    <div class="comrade-intro animate" id="comradeIntro">
+      <div class="intro-badge">
+        <span class="intro-prefix" id="introPrefix">A</span>
+        <span class="intro-brand" id="introBrand">AshWorks</span>
+        <span class="intro-suffix" id="introSuffix">ORIGINAL</span>
+      </div>
+    </div>
+
+    <!-- Top Left Brand Pill -->
+    <div class="top-brand-pill">
+      <span class="top-brand-logo" id="introTopLogo">AshWorks</span>
+      <span class="top-brand-tag" id="introTopTag">PORTFOLIO</span>
+    </div>
+
+    <!-- Top Right Netflix Profile Avatar -> Click to Enter -->
+    <a href="javascript:void(0)" class="top-profile-link" title="Enter Portfolio">
+      <img src="images/ashish_avatar.jpg" alt="Profile" class="top-profile-thumb" id="topProfileThumb" />
+      <span class="top-profile-name" id="topProfileName">Portfolio</span>
+      <span class="top-profile-arrow">▾</span>
+    </a>
+
+    <!-- Header: Name Collision + Subtitle -->
+    <div class="brand-header animate" id="brandHeader" title="Click anywhere to replay">
+      <div class="name-container" id="nameContainer">
+        <div class="half from-left animate" id="titlePart1">ASH</div>
+        <div class="half from-right animate" id="titlePart2">ISH</div>
+      </div>
+      <div class="story-subtitle animate" id="storySubtitle"></div>
+    </div>
+
+    <!-- Transparent Photo with Highlighted Outlines -->
+    <div class="photo-wrapper animate" id="photoWrapper">
+      <img src="images/default_avatar.svg" alt="Profile" class="profile-photo" id="profilePhoto" />
+    </div>
+
+    <!-- Bottom Action Bar (Tagline + Play Button) -->
+    <div class="bottom-bar animate" id="bottomBar">
+      <div class="role-tagline">
+        <span class="role-primary" id="rolePrimary">FRONT END DEVELOPER</span>
+        <span class="role-divider" id="roleDivider" style="display:inline;">•</span>
+        <span class="role-secondary" id="roleSecondary">MASTERING BUSINESS MANAGEMENT</span>
+      </div>
+      <button class="play-btn" id="playBtn" title="Play">
+        <svg class="play-icon" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        <span id="playBtnLabel">Explore Work</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= NAVBAR ================= -->
+  <header class="navbar" id="navbar">
+    <div class="nav-left">
+      <a href="index.html" class="logo">AshWorks</a>
+      <ul class="nav-links">
+        <li><a href="#home" class="nav-link active">Home</a></li>
+        <li><a href="#projects" class="nav-link">Projects</a></li>
+        <li><a href="#story-section" class="nav-link">The Story</a></li>
+        <li><a href="#skills-universe" class="nav-link">Skills Universe</a></li>
+        <li><a href="#originals" class="nav-link">Originals</a></li>
+        <li><a href="#about-me" class="nav-link">About Me</a></li>
+        <li><a href="#journey" class="nav-link">My Journey</a></li>
+        <li><a href="#contact" class="nav-link">Contact</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-right">
+      <!-- Search Icon -->
+      <button class="nav-icon-btn" title="Search" onclick="triggerSearch()">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      </button>
+
+      <!-- Notifications Icon -->
+      <button class="nav-icon-btn" title="Notifications" onclick="alert('Notification: Portfolio is open for creative opportunities & engineering roles!')">
+        <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+      </button>
+
+      <!-- Profile Avatar & Dropdown -->
+      <div class="profile-menu-container">
+        <div class="profile-trigger">
+          <img src="images/ashish_avatar.jpg" alt="Ashish" class="profile-thumb" />
+          <span class="caret">▼</span>
+        </div>
+        <div class="profile-dropdown">
+          <a href="javascript:void(0)" onclick="replayIntro()" class="dropdown-item">
+            <span>🎬 Watch Intro Reel</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="#about-me" class="dropdown-item">
+            <span>👤 About Me</span>
+          </a>
+          <a href="#projects" class="dropdown-item">
+            <span>🚀 Featured Projects</span>
+          </a>
+          <a href="#contact" class="dropdown-item">
+            <span>📫 Get in Touch</span>
+          </a>
+          <a href="#resume-modal" class="dropdown-item" onclick="openResumeModal()">
+            <span>📄 View Resume</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= BILLBOARD HERO ================= -->
+
+  <!-- ================= 1. HOME (HERO BILLBOARD) ================= -->
+  <section class="billboard" id="home">
+    <div class="billboard-bg">
+      <img src="images/default_hero.svg" alt="Portfolio" class="billboard-img" />
+    </div>
+    <div class="billboard-vignette"></div>
+
+    <div class="billboard-content">
+      <div class="series-badge">
+        <span>AN AshWorks ORIGINAL PORTFOLIO</span>
+      </div>
+
+      <h1 class="billboard-title" id="billboardTitle"></h1>
+
+      <div class="billboard-meta">
+        <span class="match-score" id="billboardMatch"></span>
+        <span class="meta-tag" id="billboardRating"></span>
+        <span class="meta-hd" id="billboardQuality"></span>
+        <span class="meta-tag" id="billboardYear"></span>
+        <span id="billboardSeason" style="display: none;"></span>
+      </div>
+
+      <p class="billboard-desc" id="billboardDesc" style="display: none;"></p>
+
+      <div class="billboard-actions">
+        <a href="#projects" class="btn-play">
+          <svg class="btn-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <span>Explore Work</span>
+        </a>
+        <button class="btn-info" onclick="openBioModal()">
+          <svg class="btn-icon" viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+          <span>More Info</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= NETFLIX ROWS ================= -->
+  <main class="content-rows">
+
+    <!-- ================= 2. PROJECTS (CONTINUE EXPLORING) ================= -->
+    <section class="row-container" id="projects">
+      <h2 class="row-title">
+        <span>Continue Exploring</span>
+        <span class="see-all" onclick="scrollToPortfolioSection('originals')">Explore all ›</span>
+      </h2>
+
+      <div class="row-cards" id="projectsRow">
+        <!-- Card 1: FULL STORY (Gold / Amber) -->
+        <div class="netflix-card card-theme-gold" onclick="scrollToPortfolioSection('story-section')" title="Resume Watching: FULL STORY">
+          <div class="card-play-action">
+            <svg viewBox="0 0 24 24"><polygon points="7,5 19,12 7,19" fill="currentColor"/></svg>
+          </div>
+          <div class="card-art-bg">
+            <svg viewBox="0 0 300 180" class="card-svg" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gStoryGold" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#352106" />
+                  <stop offset="55%" stop-color="#160e03" />
+                  <stop offset="100%" stop-color="#0a0601" />
+                </linearGradient>
+                <radialGradient id="rStoryGold" cx="50%" cy="32%" r="55%">
+                  <stop offset="0%" stop-color="rgba(245,158,11,0.42)" />
+                  <stop offset="100%" stop-color="transparent" />
+                </radialGradient>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#gStoryGold)" />
+              <circle cx="150" cy="50" r="85" fill="url(#rStoryGold)" />
+              <!-- Script & Clapper Icon -->
+              <g transform="translate(112, 14)" stroke="#F59E0B" stroke-width="2" fill="none" opacity="0.85">
+                <rect x="0" y="8" width="76" height="52" rx="4" fill="#1b1204" stroke="rgba(245,158,11,0.75)" />
+                <path d="M 0 20 L 76 20" stroke="rgba(245,158,11,0.9)" />
+                <path d="M 12 30 L 64 30 M 12 39 L 52 39 M 12 48 L 38 48" stroke="rgba(255,255,255,0.45)" stroke-width="2" stroke-linecap="round" />
+                <polygon points="34,26 34,44 48,35" fill="#F59E0B" stroke="none" opacity="0.95" />
+              </g>
+            </svg>
+          </div>
+          <div class="card-gradient"></div>
+          <div class="card-body">
+            <span class="card-ep-tag">EP 03</span>
+            <h3 class="card-title">FULL STORY</h3>
+          </div>
+          <div class="card-progress-bar"><div class="card-progress-fill" style="width: 72%;"></div></div>
+        </div>
+
+        <!-- Card 2: MY SKILLS (Cyan / Electric Blue) -->
+        <div class="netflix-card card-theme-cyan" onclick="scrollToPortfolioSection('skills-universe')" title="Resume Watching: MY SKILLS">
+          <div class="card-play-action">
+            <svg viewBox="0 0 24 24"><polygon points="7,5 19,12 7,19" fill="currentColor"/></svg>
+          </div>
+          <div class="card-art-bg">
+            <svg viewBox="0 0 300 180" class="card-svg" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gSkillsCyan" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#042028" />
+                  <stop offset="55%" stop-color="#061318" />
+                  <stop offset="100%" stop-color="#02090c" />
+                </linearGradient>
+                <radialGradient id="rSkillsCyan" cx="50%" cy="32%" r="55%">
+                  <stop offset="0%" stop-color="rgba(0,229,255,0.4)" />
+                  <stop offset="100%" stop-color="transparent" />
+                </radialGradient>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#gSkillsCyan)" />
+              <circle cx="150" cy="50" r="85" fill="url(#rSkillsCyan)" />
+              <!-- Tech Code Brackets & Nodes Icon -->
+              <g transform="translate(108, 14)" stroke="#00E5FF" stroke-width="2.5" fill="none" opacity="0.88" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M 26 18 L 8 36 L 26 54" />
+                <path d="M 58 18 L 76 36 L 58 54" />
+                <path d="M 37 56 L 47 16" stroke="rgba(255,255,255,0.85)" />
+                <circle cx="42" cy="36" r="3.5" fill="#00E5FF" stroke="none" />
+              </g>
+            </svg>
+          </div>
+          <div class="card-gradient"></div>
+          <div class="card-body">
+            <span class="card-ep-tag">EP 07</span>
+            <h3 class="card-title">MY SKILLS</h3>
+          </div>
+          <div class="card-progress-bar"><div class="card-progress-fill" style="width: 48%;"></div></div>
+        </div>
+
+        <!-- Card 3: MY PROJECTS (Netflix Crimson) -->
+        <div class="netflix-card card-theme-crimson" onclick="scrollToPortfolioSection('originals')" title="Resume Watching: MY PROJECTS">
+          <div class="card-play-action">
+            <svg viewBox="0 0 24 24"><polygon points="7,5 19,12 7,19" fill="currentColor"/></svg>
+          </div>
+          <div class="card-art-bg">
+            <svg viewBox="0 0 300 180" class="card-svg" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gProjCrimson" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#2e0708" />
+                  <stop offset="55%" stop-color="#160607" />
+                  <stop offset="100%" stop-color="#0a0304" />
+                </linearGradient>
+                <radialGradient id="rProjCrimson" cx="50%" cy="32%" r="55%">
+                  <stop offset="0%" stop-color="rgba(229,9,20,0.42)" />
+                  <stop offset="100%" stop-color="transparent" />
+                </radialGradient>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#gProjCrimson)" />
+              <circle cx="150" cy="50" r="85" fill="url(#rProjCrimson)" />
+              <!-- Rocket Launch Icon -->
+              <g transform="translate(118, 12)" fill="none" opacity="0.88">
+                <path d="M 32 12 C 32 12, 48 24, 46 45 L 32 40 L 18 45 C 16 24, 32 12, 32 12 Z" fill="rgba(229,9,20,0.28)" stroke="#E50914" stroke-width="2" />
+                <circle cx="32" cy="26" r="3.5" fill="#FFFFFF" />
+                <path d="M 24 45 L 20 56 L 28 51" fill="#E50914" />
+                <path d="M 40 45 L 44 56 L 36 51" fill="#E50914" />
+                <path d="M 32 43 L 32 60" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+              </g>
+            </svg>
+          </div>
+          <div class="card-gradient"></div>
+          <div class="card-body">
+            <span class="card-ep-tag">EP 01</span>
+            <h3 class="card-title">MY PROJECTS</h3>
+          </div>
+          <div class="card-progress-bar"><div class="card-progress-fill" style="width: 84%;"></div></div>
+        </div>
+
+        <!-- Card 4: ABOUT ME (Emerald Green) -->
+        <div class="netflix-card card-theme-emerald" onclick="scrollToPortfolioSection('about-me')" title="Resume Watching: ABOUT ME">
+          <div class="card-play-action">
+            <svg viewBox="0 0 24 24"><polygon points="7,5 19,12 7,19" fill="currentColor"/></svg>
+          </div>
+          <div class="card-art-bg">
+            <svg viewBox="0 0 300 180" class="card-svg" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gAboutEmerald" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#052417" />
+                  <stop offset="55%" stop-color="#06140e" />
+                  <stop offset="100%" stop-color="#020b07" />
+                </linearGradient>
+                <radialGradient id="rAboutEmerald" cx="50%" cy="32%" r="55%">
+                  <stop offset="0%" stop-color="rgba(16,185,129,0.4)" />
+                  <stop offset="100%" stop-color="transparent" />
+                </radialGradient>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#gAboutEmerald)" />
+              <circle cx="150" cy="50" r="85" fill="url(#rAboutEmerald)" />
+              <!-- Dossier / Spotlight Avatar Silhouette Icon -->
+              <g transform="translate(122, 14)" fill="none" opacity="0.88" stroke="#10B981" stroke-width="2">
+                <circle cx="28" cy="18" r="13" stroke="#10B981" fill="rgba(16,185,129,0.25)" />
+                <path d="M 8 50 C 8 35, 18 33, 28 33 C 38 33, 48 35, 48 50" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-linecap="round" />
+                <circle cx="28" cy="18" r="5" fill="#FFFFFF" stroke="none" />
+              </g>
+            </svg>
+          </div>
+          <div class="card-gradient"></div>
+          <div class="card-body">
+            <span class="card-ep-tag">EP 04</span>
+            <h3 class="card-title">ABOUT ME</h3>
+          </div>
+          <div class="card-progress-bar"><div class="card-progress-fill" style="width: 35%;"></div></div>
+        </div>
+
+        <!-- Card 5: MY JOURNEY (Royal Purple) -->
+        <div class="netflix-card card-theme-purple" onclick="scrollToPortfolioSection('journey')" title="Resume Watching: MY JOURNEY">
+          <div class="card-play-action">
+            <svg viewBox="0 0 24 24"><polygon points="7,5 19,12 7,19" fill="currentColor"/></svg>
+          </div>
+          <div class="card-art-bg">
+            <svg viewBox="0 0 300 180" class="card-svg" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gJourneyPurple" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#230932" />
+                  <stop offset="55%" stop-color="#12051a" />
+                  <stop offset="100%" stop-color="#08020d" />
+                </linearGradient>
+                <radialGradient id="rJourneyPurple" cx="50%" cy="32%" r="55%">
+                  <stop offset="0%" stop-color="rgba(168,85,247,0.44)" />
+                  <stop offset="100%" stop-color="transparent" />
+                </radialGradient>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#gJourneyPurple)" />
+              <circle cx="150" cy="50" r="85" fill="url(#rJourneyPurple)" />
+              <!-- Roadmap / Compass Navigation Icon -->
+              <g transform="translate(116, 13)" fill="none" opacity="0.88" stroke="#A855F7" stroke-width="2">
+                <circle cx="34" cy="32" r="22" stroke="rgba(168,85,247,0.55)" stroke-dasharray="3 3" />
+                <polygon points="34,14 39,32 34,50 29,32" fill="rgba(168,85,247,0.3)" stroke="#A855F7" stroke-width="1.5" />
+                <polygon points="34,14 39,32 34,32" fill="#A855F7" />
+                <circle cx="34" cy="32" r="3" fill="#FFFFFF" stroke="none" />
+                <circle cx="16" cy="18" r="2" fill="#FFFFFF" />
+                <circle cx="52" cy="18" r="2" fill="#FFFFFF" />
+                <circle cx="52" cy="46" r="2" fill="#FFFFFF" />
+                <circle cx="16" cy="46" r="2" fill="#FFFFFF" />
+              </g>
+            </svg>
+          </div>
+          <div class="card-gradient"></div>
+          <div class="card-body">
+            <span class="card-ep-tag">EP 02</span>
+            <h3 class="card-title">MY JOURNEY</h3>
+          </div>
+          <div class="card-progress-bar"><div class="card-progress-fill" style="width: 65%;"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 3. THE STORY (THE SCREENPLAY) ================= -->
+    <section class="story-resume-section" id="story-section">
+  <div class="story-section-header">
+    <div class="screenplay-header">
+      <div class="screenplay-eyebrow-row">
+        <span class="screenplay-red-h-line"></span>
+        <span class="screenplay-tag" id="screenplayTag">The Screenplay</span>
+      </div>
+      <h2 class="screenplay-main-title" id="screenplayMainTitle">THE FULL STORY</h2>
+    </div>
+  </div>
+
+  <div class="story-resume-container">
+    
+    <!-- LEFT COLUMN: THE FULL STORY (BLACK PAGE, RED HEADINGS) -->
+    <div class="story-paper-wrapper">
+      <div class="a4-sheet story-black-page" id="a4Paper">
+        
+        <!-- Top Header: Left Corner & Right Corner -->
+        <div class="story-black-header">
+          
+          <!-- Left Corner: Starting \n Name -->
+          <div class="story-header-left">
+            <span class="story-header-eyebrow">Starting</span>
+            <h1 class="story-header-title" id="storyHeaderTitle">ASHISH SINGH</h1>
+          </div>
+
+          <!-- Right Corner: Email \n (LinkedIn & GitHub together on one line) -->
+          <div class="story-header-right">
+            <a href="#" class="story-social-link" id="storyEmailLink" title="Email">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+              <span id="storyEmailText"></span>
+            </a>
+            <div class="story-social-row">
+              <a href="#" id="storyLinkedInLink" target="_blank" rel="noopener noreferrer" class="story-social-link" title="LinkedIn Profile">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.45a1.6 1.6 0 0 0-1.6 1.6 1.6 1.6 0 0 0 1.6 1.6 1.6 1.6 0 0 0 1.6-1.6c0-.88-.72-1.6-1.6-1.6z"/>
+                </svg>
+                <span>LinkedIn</span>
+              </a>
+              <span class="story-social-sep">•</span>
+              <a href="#" id="storyGitHubLink" target="_blank" rel="noopener noreferrer" class="story-social-link" title="GitHub Profile">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                </svg>
+                <span>GitHub</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Red Accent Divider Line -->
+        <div class="story-red-divider"></div>
+
+        <!-- Content Canvas: Education section on left side -->
+        <div class="story-page-content" id="storyContentArea">
+          <div class="story-page-grid">
+            
+            <!-- Left Side Column -->
+            <div class="story-col-left">
+              <div class="story-block">
+                <h2 class="story-section-heading">EDUCATION</h2>
+                <div id="storyEduCardsList">
+                  <div class="story-edu-card">
+                    <h3 class="story-edu-title" style="color: #ffffff !important; text-transform: none;">Indian Institute of Technology Madras</h3>
+                    <div class="story-edu-degree" style="color: #ffffff !important;">Pursuing Bachelor of Science (BS) in Management and Data Science</div>
+                  </div>
+                  <div class="story-edu-card">
+                    <h3 class="story-edu-title" style="color: #ffffff !important; text-transform: none;">Delhi Public School</h3>
+                    <div class="story-edu-degree" style="color: #ffffff !important;">Senior Secondary (Class XII) | Secondary (Class X)</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Academic Experience (Management & Data Science Focused) -->
+              <div class="story-block" style="margin-top: 26px;">
+                <h2 class="story-section-heading">ACADEMIC EXPERIENCE</h2>
+                <div class="story-exp-card" id="storyAcademicExpCard">
+                  <h3 class="story-exp-role" id="storyExpRole" style="color: #ffffff !important;">DATA SCIENCE &amp; ANALYTICS</h3>
+                  <div class="story-exp-inst" id="storyExpInst" style="color: #e4e4e7 !important;">Two Years of Academic Study</div>
+                  <ul class="story-bullet-list" id="storyExpBullets">
+                    <li><strong>Statistical Analysis &amp; Probability:</strong> Studied statistical concepts, probability distributions, descriptive statistics, and quantitative techniques to understand data characteristics and interpret analytical results.</li>
+                    <li><strong>Data Interpretation &amp; Visualization:</strong> Developed an understanding of data representation, graphical analysis, and the interpretation of datasets to identify patterns, trends, and meaningful insights.</li>
+                    <li><strong>Mathematical Foundations:</strong> Explored mathematical concepts relevant to Data Science, including quantitative reasoning and analytical methods used in data-driven problem-solving.</li>
+                    <li><strong>Programming Fundamentals:</strong> Studied computational thinking, programming logic, and foundational approaches to solving analytical problems through structured methods.</li>
+                    <li><strong>Business Analytics:</strong> Explored the role of data analysis in business and management, including performance evaluation, informed decision-making, and evidence-based business insights.</li>
+                    <li><strong>Analytical Problem-Solving:</strong> Developed a structured approach to breaking down complex problems, interpreting information, evaluating possible solutions, and drawing logical conclusions from available data.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Certifications -->
+              <div class="story-block" style="margin-top: 26px;">
+                <h2 class="story-section-heading">CERTIFICATIONS</h2>
+                <div id="storyCertCardsList"></div>
+              </div>
+            </div>
+
+            <!-- Right Side Column: Technical Skills -->
+            <div class="story-col-right" id="storyColRight">
+              <div class="story-block">
+                <h2 class="story-section-heading">TECHNICAL SKILLS</h2>
+                <div id="storyTechSkillsList">
+                  <div class="story-skill-group">
+                    <h3 class="story-skill-category" style="color: #ffffff !important;">Frontend Development</h3>
+                    <p class="story-skill-items">HTML, CSS, JavaScript</p>
+                  </div>
+                  <div class="story-skill-group">
+                    <h3 class="story-skill-category" style="color: #ffffff !important;">Backend Development</h3>
+                    <p class="story-skill-items">Node.js, APIs, Authentication</p>
+                  </div>
+                  <div class="story-skill-group">
+                    <h3 class="story-skill-category" style="color: #ffffff !important;">Data Science &amp; ML</h3>
+                    <p class="story-skill-items">Python, NumPy, Scikit-learn, Matplotlib</p>
+                  </div>
+                  <div class="story-skill-group">
+                    <h3 class="story-skill-category" style="color: #ffffff !important;">Database Management</h3>
+                    <p class="story-skill-items">Firebase</p>
+                  </div>
+                  <div class="story-skill-group">
+                    <h3 class="story-skill-category" style="color: #ffffff !important;">Cloud &amp; Deployment</h3>
+                    <p class="story-skill-items">Vercel, Netlify, Railway</p>
+                  </div>
+                  <div class="story-skill-group">
+                    <h3 class="story-skill-category" style="color: #ffffff !important;">Tools &amp; Technologies</h3>
+                    <p class="story-skill-items">Git, GitHub, VS Code</p>
+                  </div>
+                  <div class="story-skill-group">
+                    <h3 class="story-skill-category" style="color: #ffffff !important;">Python &amp; Data Analysis</h3>
+                    <p class="story-skill-items">Python · NumPy · Pandas · Matplotlib · Data Cleaning · Exploratory Data Analysis (EDA)</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Projects Section -->
+              <div class="story-block" style="margin-top: 26px;">
+                <h2 class="story-section-heading">PROJECTS</h2>
+                <div id="storyProjectsList">
+                  <div class="story-proj-card">
+                    <h3 class="story-proj-title" style="color: #ffffff !important; text-transform: none;">Management Hub</h3>
+                    <div class="story-proj-subtitle" style="color: #e4e4e7 !important;">Academic &amp; Exam Preparation Platform for IIT Madras BS Students</div>
+                    <div class="story-proj-desc">A student-focused educational platform for IIT Madras BS students, providing study notes, previous year questions (PYQs), exam preparation resources, and academic guidance.</div>
+                    <ul class="story-bullet-list">
+                      <li><strong>Key Skills:</strong> Frontend Development, UI/UX Design, Content Management, Web Deployment</li>
+                    </ul>
+                    <div class="story-proj-tech">
+                      <span class="story-proj-tech-label">Tech Stack:</span> React, Vite, Node.js, Express.js, Firebase (Firestore &amp; Auth), Cloudinary, Git, GitHub
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: EVERY EPISODE IN ONE PAGE (OUTSIDE THE PAGE) -->
+    <div class="resume-panel">
+      <h3 class="resume-panel-title" id="resumePanelTitle">EVERY EPISODE IN ONE PAGE</h3>
+      <p class="resume-panel-desc" id="resumePanelDesc">
+        A complete journey, technical milestones, and engineering impact distilled into a single document.<br>
+        Instant access to verified credentials, production projects, and software architecture.
+      </p>
+
+      <!-- Action Buttons: View & Download -->
+      <div class="resume-actions-group">
+        <button class="btn-resume-view" id="btnResumeView" onclick="openResumeModal()">
+          <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          <span id="btnResumeViewLabel">View Resume</span>
+        </button>
+
+        <button class="btn-resume-download" id="btnResumeDownload" onclick="downloadResume()">
+          <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span id="btnResumeDownloadLabel">Download Resume</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+    <!-- ================= 4. SKILLS UNIVERSE ================= -->
+    <section class="skills-universe-section" id="skills-universe">
+      <div class="skills-universe-header">
+        <div class="skills-eyebrow-row">
+          <span class="skills-red-h-line" id="skillsRedLine"></span>
+          <span class="skills-genre-tag" id="skillsGenreTag">Genre</span>
+        </div>
+        <h2 class="skills-universe-title" id="skillsUniverseTitle">MY SKILLS UNIVERSE</h2>
+      </div>
+
+      <div class="skills-selector-layout">
+        <!-- Left Side: Clean Category Menu (Instant Hover & Click Selection) -->
+        <div class="skills-category-nav" id="skillsCategoryNav" role="tablist">
+          <!-- 0: Frontend Development -->
+          <div class="skill-accordion-item active" id="skillAccItem0">
+            <button class="skill-nav-btn active" onmouseenter="if (window.innerWidth > 820) showSkillCategory(0, false)" onclick="showSkillCategory(0, true)" role="tab" id="skillTab0">
+              <div class="skill-btn-left">
+                <span class="skill-nav-indicator" style="background:#E50914;"></span>
+                <span>Frontend Development</span>
+              </div>
+              <span class="skill-chevron">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              </span>
+            </button>
+            <div class="skill-mobile-panel" id="skillMobilePanel0">
+              <span class="stage-eyebrow" style="color:#E50914;">ACTIVE GENRE // 01</span>
+              <div class="stage-tech-row">
+                <span class="stage-pill" style="--accent:#E50914; border-color:#E5091444;">HTML</span>
+                <span class="stage-pill" style="--accent:#E50914; border-color:#E5091444;">CSS</span>
+                <span class="stage-pill" style="--accent:#E50914; border-color:#E5091444;">JavaScript</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 1: Backend Development -->
+          <div class="skill-accordion-item" id="skillAccItem1">
+            <button class="skill-nav-btn" onmouseenter="if (window.innerWidth > 820) showSkillCategory(1, false)" onclick="showSkillCategory(1, true)" role="tab" id="skillTab1">
+              <div class="skill-btn-left">
+                <span class="skill-nav-indicator" style="background:#00D2FF;"></span>
+                <span>Backend Development</span>
+              </div>
+              <span class="skill-chevron">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              </span>
+            </button>
+            <div class="skill-mobile-panel" id="skillMobilePanel1">
+              <span class="stage-eyebrow" style="color:#00D2FF;">ACTIVE GENRE // 02</span>
+              <div class="stage-tech-row">
+                <span class="stage-pill" style="--accent:#00D2FF; border-color:#00D2FF44;">Node.js</span>
+                <span class="stage-pill" style="--accent:#00D2FF; border-color:#00D2FF44;">APIs</span>
+                <span class="stage-pill" style="--accent:#00D2FF; border-color:#00D2FF44;">Authentication</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2: Data Science & ML -->
+          <div class="skill-accordion-item" id="skillAccItem2">
+            <button class="skill-nav-btn" onmouseenter="if (window.innerWidth > 820) showSkillCategory(2, false)" onclick="showSkillCategory(2, true)" role="tab" id="skillTab2">
+              <div class="skill-btn-left">
+                <span class="skill-nav-indicator" style="background:#10B981;"></span>
+                <span>Data Science &amp; ML</span>
+              </div>
+              <span class="skill-chevron">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              </span>
+            </button>
+            <div class="skill-mobile-panel" id="skillMobilePanel2">
+              <span class="stage-eyebrow" style="color:#10B981;">ACTIVE GENRE // 03</span>
+              <div class="stage-tech-row">
+                <span class="stage-pill" style="--accent:#10B981; border-color:#10B98144;">Python</span>
+                <span class="stage-pill" style="--accent:#10B981; border-color:#10B98144;">NumPy</span>
+                <span class="stage-pill" style="--accent:#10B981; border-color:#10B98144;">Scikit-learn</span>
+                <span class="stage-pill" style="--accent:#10B981; border-color:#10B98144;">Matplotlib</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3: Database Management -->
+          <div class="skill-accordion-item" id="skillAccItem3">
+            <button class="skill-nav-btn" onmouseenter="if (window.innerWidth > 820) showSkillCategory(3, false)" onclick="showSkillCategory(3, true)" role="tab" id="skillTab3">
+              <div class="skill-btn-left">
+                <span class="skill-nav-indicator" style="background:#F59E0B;"></span>
+                <span>Database Management</span>
+              </div>
+              <span class="skill-chevron">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              </span>
+            </button>
+            <div class="skill-mobile-panel" id="skillMobilePanel3">
+              <span class="stage-eyebrow" style="color:#F59E0B;">ACTIVE GENRE // 04</span>
+              <div class="stage-tech-row">
+                <span class="stage-pill" style="--accent:#F59E0B; border-color:#F59E0B44;">Firebase</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4: Cloud & Deployment -->
+          <div class="skill-accordion-item" id="skillAccItem4">
+            <button class="skill-nav-btn" onmouseenter="if (window.innerWidth > 820) showSkillCategory(4, false)" onclick="showSkillCategory(4, true)" role="tab" id="skillTab4">
+              <div class="skill-btn-left">
+                <span class="skill-nav-indicator" style="background:#A855F7;"></span>
+                <span>Cloud &amp; Deployment</span>
+              </div>
+              <span class="skill-chevron">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              </span>
+            </button>
+            <div class="skill-mobile-panel" id="skillMobilePanel4">
+              <span class="stage-eyebrow" style="color:#A855F7;">ACTIVE GENRE // 05</span>
+              <div class="stage-tech-row">
+                <span class="stage-pill" style="--accent:#A855F7; border-color:#A855F744;">Vercel</span>
+                <span class="stage-pill" style="--accent:#A855F7; border-color:#A855F744;">Netlify</span>
+                <span class="stage-pill" style="--accent:#A855F7; border-color:#A855F744;">Railway</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5: Tools & Technologies -->
+          <div class="skill-accordion-item" id="skillAccItem5">
+            <button class="skill-nav-btn" onmouseenter="if (window.innerWidth > 820) showSkillCategory(5, false)" onclick="showSkillCategory(5, true)" role="tab" id="skillTab5">
+              <div class="skill-btn-left">
+                <span class="skill-nav-indicator" style="background:#3B82F6;"></span>
+                <span>Tools &amp; Technologies</span>
+              </div>
+              <span class="skill-chevron">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              </span>
+            </button>
+            <div class="skill-mobile-panel" id="skillMobilePanel5">
+              <span class="stage-eyebrow" style="color:#3B82F6;">ACTIVE GENRE // 06</span>
+              <div class="stage-tech-row">
+                <span class="stage-pill" style="--accent:#3B82F6; border-color:#3B82F644;">Git</span>
+                <span class="stage-pill" style="--accent:#3B82F6; border-color:#3B82F644;">GitHub</span>
+                <span class="stage-pill" style="--accent:#3B82F6; border-color:#3B82F644;">VS Code</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6: Python & Data Analysis -->
+          <div class="skill-accordion-item" id="skillAccItem6">
+            <button class="skill-nav-btn" onmouseenter="if (window.innerWidth > 820) showSkillCategory(6, false)" onclick="showSkillCategory(6, true)" role="tab" id="skillTab6">
+              <div class="skill-btn-left">
+                <span class="skill-nav-indicator" style="background:#EC4899;"></span>
+                <span>Python &amp; Data Analysis</span>
+              </div>
+              <span class="skill-chevron">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              </span>
+            </button>
+            <div class="skill-mobile-panel" id="skillMobilePanel6">
+              <span class="stage-eyebrow" style="color:#EC4899;">ACTIVE GENRE // 07</span>
+              <div class="stage-tech-row">
+                <span class="stage-pill" style="--accent:#EC4899; border-color:#EC489944;">Python</span>
+                <span class="stage-pill" style="--accent:#EC4899; border-color:#EC489944;">NumPy</span>
+                <span class="stage-pill" style="--accent:#EC4899; border-color:#EC489944;">Pandas</span>
+                <span class="stage-pill" style="--accent:#EC4899; border-color:#EC489944;">Matplotlib</span>
+                <span class="stage-pill" style="--accent:#EC4899; border-color:#EC489944;">Data Cleaning</span>
+                <span class="stage-pill" style="--accent:#EC4899; border-color:#EC489944;">Exploratory Data Analysis (EDA)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Active Content Display (Shows ONLY the selected category!) -->
+        <div class="skills-active-stage" id="skillsActiveStage">
+          <!-- 0: Frontend Development -->
+          <div class="skill-panel-view active" id="skillPanel0">
+            <span class="stage-eyebrow" style="color:#E50914;">ACTIVE GENRE // 01</span>
+            <h3 class="stage-title">Frontend Development</h3>
+            <div class="stage-tech-row">
+              <span class="stage-pill">HTML</span>
+              <span class="stage-pill">CSS</span>
+              <span class="stage-pill">JavaScript</span>
+            </div>
+          </div>
+
+          <!-- 1: Backend Development -->
+          <div class="skill-panel-view" id="skillPanel1">
+            <span class="stage-eyebrow" style="color:#E50914;">ACTIVE GENRE // 02</span>
+            <h3 class="stage-title">Backend Development</h3>
+            <div class="stage-tech-row">
+              <span class="stage-pill">Node.js</span>
+              <span class="stage-pill">APIs</span>
+              <span class="stage-pill">Authentication</span>
+            </div>
+          </div>
+
+          <!-- 2: Data Science & ML -->
+          <div class="skill-panel-view" id="skillPanel2">
+            <span class="stage-eyebrow" style="color:#E50914;">ACTIVE GENRE // 03</span>
+            <h3 class="stage-title">Data Science &amp; ML</h3>
+            <div class="stage-tech-row">
+              <span class="stage-pill">Python</span>
+              <span class="stage-pill">NumPy</span>
+              <span class="stage-pill">Scikit-learn</span>
+              <span class="stage-pill">Matplotlib</span>
+            </div>
+          </div>
+
+          <!-- 3: Database Management -->
+          <div class="skill-panel-view" id="skillPanel3">
+            <span class="stage-eyebrow" style="color:#E50914;">ACTIVE GENRE // 04</span>
+            <h3 class="stage-title">Database Management</h3>
+            <div class="stage-tech-row">
+              <span class="stage-pill">Firebase</span>
+            </div>
+          </div>
+
+          <!-- 4: Cloud & Deployment -->
+          <div class="skill-panel-view" id="skillPanel4">
+            <span class="stage-eyebrow" style="color:#E50914;">ACTIVE GENRE // 05</span>
+            <h3 class="stage-title">Cloud &amp; Deployment</h3>
+            <div class="stage-tech-row">
+              <span class="stage-pill">Vercel</span>
+              <span class="stage-pill">Netlify</span>
+              <span class="stage-pill">Railway</span>
+            </div>
+          </div>
+
+          <!-- 5: Tools & Technologies -->
+          <div class="skill-panel-view" id="skillPanel5">
+            <span class="stage-eyebrow" style="color:#E50914;">ACTIVE GENRE // 06</span>
+            <h3 class="stage-title">Tools &amp; Technologies</h3>
+            <div class="stage-tech-row">
+              <span class="stage-pill">Git</span>
+              <span class="stage-pill">GitHub</span>
+              <span class="stage-pill">VS Code</span>
+            </div>
+          </div>
+
+          <!-- 6: Python & Data Analysis -->
+          <div class="skill-panel-view" id="skillPanel6">
+            <span class="stage-eyebrow" style="color:#E50914;">ACTIVE GENRE // 07</span>
+            <h3 class="stage-title">Python &amp; Data Analysis</h3>
+            <div class="stage-tech-row">
+              <span class="stage-pill">Python</span>
+              <span class="stage-pill">NumPy</span>
+              <span class="stage-pill">Pandas</span>
+              <span class="stage-pill">Matplotlib</span>
+              <span class="stage-pill">Data Cleaning</span>
+              <span class="stage-pill">Exploratory Data Analysis (EDA)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 5. ORIGINALS (FEATURED PROJECTS) ================= -->
+    <section class="originals-section" id="originals">
+      <div class="originals-wrapper">
+        
+        <!-- Left Side: Brand Header (1cm Red Line + PROJECTS + Big ORIGINALS) -->
+        <div class="originals-brand-col">
+          <div class="originals-eyebrow-row">
+            <span class="originals-red-h-line"></span>
+            <span class="originals-tag" id="originalsTag">PROJECTS</span>
+          </div>
+          <h2 class="originals-title" id="originalsMainTitle">ORIGINALS</h2>
+        </div>
+
+        <!-- Right Side: 2 Real Featured Projects -->
+        <div class="originals-cards-row" id="originalsCardsRow">
+          
+          <!-- Project 1: MANAGEMENT HUB (Originals) -->
+          <div class="originals-card" onclick="openProjectModal('Management Hub', 'Academic &amp; Exam Preparation Platform for IIT Madras BS Students', 'A student-focused educational platform for IIT Madras BS students, providing study notes, previous year questions (PYQs), exam preparation resources, and academic guidance.', 'React, Vite, Node.js, Express.js, Firebase (Firestore &amp; Auth), Cloudinary, Git, GitHub', 'TOP 1', 'images/management_hub_banner.png', 'https://management-hub-1c14c.web.app/', '2026', 'HD')">
+            <span class="top10-badge">TOP 1</span>
+            <img src="images/management_hub_card.png" alt="Management Hub" class="card-bg" style="object-position: center; object-fit: cover;" />
+            <div class="card-gradient"></div>
+            <div class="card-body">
+              <span class="card-category">Educational Platform | EdTech</span>
+              <h3 class="card-title">Management Hub</h3>
+              <div class="card-meta">
+                <span class="card-tags">Academic &amp; Exam Preparation Platform for IIT Madras BS Students</span>
+              </div>
+              <button class="btn-view-project" onclick="event.stopPropagation(); openProjectModal('Management Hub', 'Academic &amp; Exam Preparation Platform for IIT Madras BS Students', 'A student-focused educational platform for IIT Madras BS students, providing study notes, previous year questions (PYQs), exam preparation resources, and academic guidance.', 'React, Vite, Node.js, Express.js, Firebase (Firestore &amp; Auth), Cloudinary, Git, GitHub', 'TOP 1', 'images/management_hub_banner.png', 'https://management-hub-1c14c.web.app/', '2026', 'HD')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <span>View Project</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Project 2: Consistency Tracker -->
+          <div class="originals-card" onclick="openProjectModal('Consistency Tracker', 'The Habit &amp; Routine System', 'High-performance personal habit tracking and consistency system designed to build discipline, visualize daily streaks, and quantify personal growth routines.', 'Habit Tracking • Daily Streaks • Analytics • Productivity', 'TOP 2', 'images/management_hub.jpg', '', '2026', 'HD')">
+            <span class="top10-badge">TOP 2</span>
+            <img src="images/management_hub.jpg" alt="Consistency Tracker" class="card-bg" style="object-position: center; object-fit: cover;" />
+            <div class="card-gradient"></div>
+            <div class="card-body">
+              <span class="card-category">Productivity // Original</span>
+              <h3 class="card-title">Consistency Tracker</h3>
+              <div class="card-meta">
+                <span class="card-tags">Habit &amp; Routine System</span>
+              </div>
+              <button class="btn-view-project" onclick="event.stopPropagation(); openProjectModal('Consistency Tracker', 'The Habit &amp; Routine System', 'High-performance personal habit tracking and consistency system designed to build discipline, visualize daily streaks, and quantify personal growth routines.', 'Habit Tracking • Daily Streaks • Analytics • Productivity', 'TOP 2', 'images/management_hub.jpg', '', '2026', 'HD')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <span>View Project</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= 6. ABOUT ME (THE PLOT) ================= -->
+    <section class="about-me-section" id="about-me">
+      <div class="about-header">
+        <div class="about-eyebrow-row">
+          <span class="about-red-h-line"></span>
+          <span class="about-plot-tag" id="aboutPlotTag">THE PLOT</span>
+        </div>
+        <h2 class="about-main-title" id="aboutMainTitle">ABOUT ME</h2>
+      </div>
+
+      <div class="about-layout">
+        
+        <!-- Left Side: Poster Card with Name Directly on the Picture -->
+        <div class="about-poster-wrapper">
+          <div class="about-poster-card">
+            <img src="images/ashish_about_1792849174111.jpg" alt="ASHISH SINGH" class="about-poster-img" id="aboutPosterImg" />
+            <div class="about-poster-gradient"></div>
+            <div class="about-poster-overlay">
+              <span class="about-role-pill" id="aboutRolePill" style="color: #E50914;">PROTAGONIST / DEVELOPER</span>
+              <h3 class="about-poster-name" id="aboutPosterName">ASHISH SINGH</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: 4 Lines of Intro & Detailed Metadata -->
+        <div class="about-info-col">
+          
+          <!-- 4 Lines of Intro -->
+          <div class="about-intro-text" id="aboutIntroText">
+            <span class="about-intro-line">A dedicated Front-End Developer and Data Science student at Indian Institute of Technology Madras, passionate about engineering fluid web applications.</span>
+            <span class="about-intro-line">Focused on building responsive, high-performance digital products using React, modern JavaScript, and clean CSS architectures.</span>
+            <span class="about-intro-line">Combining computational problem-solving with analytical data skills to deliver intuitive, user-centric interfaces and scalable web solutions.</span>
+            <span class="about-intro-line">Always eager to learn, innovate, and contribute to cutting-edge software engineering and impactful real-world projects.</span>
+          </div>
+
+          <!-- Structured Metadata -->
+          <div class="about-meta-grid">
+            
+            <!-- Item 1: Pursuing -->
+            <div class="about-meta-item" style="grid-column: 1 / -1;">
+              <span class="about-meta-label">PURSUING</span>
+              <span class="about-meta-val" id="aboutPursuingVal">Bachelor of Science (BS) in Management &amp; Data Science at IIT Madras</span>
+            </div>
+
+            <!-- Item 2: Primary Language -->
+            <div class="about-meta-item">
+              <span class="about-meta-label">PRIMARY LANGUAGE</span>
+              <span class="about-meta-val" id="aboutLanguageVal">JavaScript, TypeScript, Python, HTML/CSS</span>
+            </div>
+
+            <!-- Item 3: Location -->
+            <div class="about-meta-item">
+              <span class="about-meta-label">LOCATION</span>
+              <span class="about-meta-val" id="aboutLocationVal">India</span>
+            </div>
+
+            <!-- Item 4: Work Experience -->
+            <div class="about-meta-item">
+              <span class="about-meta-label">WORK EXPERIENCE</span>
+              <span class="about-meta-val" id="aboutExperienceVal">Front-End &amp; Web Engineering Projects (Management Hub, EdTech &amp; Web Apps)</span>
+            </div>
+
+            <!-- Item 5: Interest -->
+            <div class="about-meta-item">
+              <span class="about-meta-label">INTEREST</span>
+              <span class="about-meta-val" id="aboutInterestVal">Front-End Engineering, UI/UX Design, Data Science, Web Analytics &amp; Product Development</span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= 7. MY JOURNEY (4 SEASONS & WHAT'S NEXT) ================= -->
+    <section class="journey-section" id="journey">
+      <div class="journey-header">
+        <div class="journey-eyebrow-row">
+          <span class="journey-red-h-line" id="journeyRedLine"></span>
+          <span class="journey-season-tag" id="journeyEyebrowTag">5 SEASONS</span>
+        </div>
+        <h2 class="journey-main-title" id="journeyMainTitle">MY JOURNEY</h2>
+      </div>
+
+      <!-- Clean Season Tabs (NO Boxes, Name in Short Font Below) -->
+      <div class="journey-seasons-nav" id="journeySeasonsNav" role="tablist">
+        <button class="season-nav-item active" onmouseenter="filterJourneySeason(0)" onpointerdown="filterJourneySeason(0)" onclick="filterJourneySeason(0)" id="seasonTab0" role="tab">
+          <span class="season-item-title">SEASON 1</span>
+          <span class="season-item-sub">Beginning</span>
+        </button>
+        <button class="season-nav-item" onmouseenter="filterJourneySeason(1)" onpointerdown="filterJourneySeason(1)" onclick="filterJourneySeason(1)" id="seasonTab1" role="tab">
+          <span class="season-item-title">SEASON 2</span>
+          <span class="season-item-sub">Data Science</span>
+        </button>
+        <button class="season-nav-item" onmouseenter="filterJourneySeason(2)" onpointerdown="filterJourneySeason(2)" onclick="filterJourneySeason(2)" id="seasonTab2" role="tab">
+          <span class="season-item-title">SEASON 3</span>
+          <span class="season-item-sub">Business Management</span>
+        </button>
+        <button class="season-nav-item" onmouseenter="filterJourneySeason(3)" onpointerdown="filterJourneySeason(3)" onclick="filterJourneySeason(3)" id="seasonTab3" role="tab">
+          <span class="season-item-title">SEASON 4</span>
+          <span class="season-item-sub">Start Up</span>
+        </button>
+        <button class="season-nav-item" onmouseenter="filterJourneySeason(4)" onpointerdown="filterJourneySeason(4)" onclick="filterJourneySeason(4)" id="seasonTab4" role="tab">
+          <span class="season-item-title">SEASON 5</span>
+          <span class="season-item-sub">Coming Soon</span>
+        </button>
+      </div>
+
+      <!-- Dynamic Season Stages: Only the Hovered/Active Season's Episodes are Shown -->
+      <div class="journey-seasons-container" id="journeySeasonsContainer">
+        
+        <!-- ================= PANEL 0: SEASON 1 (THE BEGINNING) ================= -->
+        <div class="journey-season-panel active" id="seasonPanel0">
+          <div class="season-panel-header">
+            <span class="season-title-badge">SEASON 01</span>
+            <h3 class="season-panel-name">Beginning</h3>
+          </div>
+
+          <div class="season-episodes-grid">
+            <!-- Ep 1 -->
+            <div class="episode-card">
+              <div class="episode-hero">
+                <svg viewBox="0 0 360 165" preserveAspectRatio="none" class="episode-art-bg">
+                  <defs>
+                    <linearGradient id="epS1E1_bg" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#2a090d" />
+                      <stop offset="60%" stop-color="#140507" />
+                      <stop offset="100%" stop-color="#0a0203" />
+                    </linearGradient>
+                    <radialGradient id="epS1E1_glow" cx="80%" cy="50%" r="65%">
+                      <stop offset="0%" stop-color="rgba(255, 59, 48, 0.45)" />
+                      <stop offset="100%" stop-color="transparent" />
+                    </radialGradient>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#epS1E1_bg)" />
+                  <circle cx="280" cy="80" r="130" fill="url(#epS1E1_glow)" />
+                  <path d="M 0 40 L 360 40 M 0 85 L 360 85 M 0 130 L 360 130" stroke="rgba(255,59,48,0.06)" stroke-width="1" />
+                  <path d="M 70 0 L 70 165 M 160 0 L 160 165 M 250 0 L 250 165" stroke="rgba(255,59,48,0.06)" stroke-width="1" />
+                  <text x="24" y="65" fill="rgba(255,59,48,0.2)" font-family="monospace" font-size="26" font-weight="bold">&gt;_ root@portfolio</text>
+                  <text x="24" y="100" fill="rgba(255,255,255,0.08)" font-family="monospace" font-size="15">$ bash init_spark.sh</text>
+                </svg>
+                <div class="episode-theme-icon" style="background: rgba(255, 59, 48, 0.12); border-color: rgba(255, 59, 48, 0.35);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#FF3B30" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" />
+                  </svg>
+                </div>
+                <div class="episode-big-num" style="color: #FF3B30; text-shadow: 0 0 28px rgba(255, 59, 48, 0.65);">
+                  <span class="ep-prefix">EP</span>01
+                </div>
+              </div>
+              <div class="episode-body">
+                <div class="episode-title-group">
+                  <span class="episode-meta-tag">PILOT EPISODE // ORIGIN</span>
+                  <h4 class="episode-title">The Spark &amp; Terminal</h4>
+                </div>
+                <p class="episode-desc">
+                  Curiosity unleashed at the command line. Discovering how raw code translates into living computing systems and mastering foundational scripts.
+                </p>
+                <div class="episode-tags">
+                  <span class="episode-tag-pill">Linux &amp; Shell</span>
+                  <span class="episode-tag-pill">Logic Building</span>
+                  <span class="episode-tag-pill">Terminal Mastery</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ep 2 -->
+            <div class="episode-card">
+              <div class="episode-hero">
+                <svg viewBox="0 0 360 165" preserveAspectRatio="none" class="episode-art-bg">
+                  <defs>
+                    <linearGradient id="epS1E2_bg" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#051c28" />
+                      <stop offset="60%" stop-color="#020e16" />
+                      <stop offset="100%" stop-color="#01060a" />
+                    </linearGradient>
+                    <radialGradient id="epS1E2_glow" cx="80%" cy="50%" r="65%">
+                      <stop offset="0%" stop-color="rgba(0, 212, 255, 0.45)" />
+                      <stop offset="100%" stop-color="transparent" />
+                    </radialGradient>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#epS1E2_bg)" />
+                  <circle cx="280" cy="80" r="130" fill="url(#epS1E2_glow)" />
+                  <path d="M 0 35 L 360 35 M 0 80 L 360 80 M 0 125 L 360 125" stroke="rgba(0,212,255,0.06)" stroke-width="1" />
+                  <path d="M 90 0 L 90 165 M 180 0 L 180 165 M 270 0 L 270 165" stroke="rgba(0,212,255,0.06)" stroke-width="1" />
+                  <text x="24" y="65" fill="rgba(0,212,255,0.2)" font-family="monospace" font-size="24" font-weight="bold">&lt;canvas id="ui"/&gt;</text>
+                  <text x="24" y="100" fill="rgba(255,255,255,0.08)" font-family="monospace" font-size="15">{ display: flex; }</text>
+                </svg>
+                <div class="episode-theme-icon" style="background: rgba(0, 212, 255, 0.12); border-color: rgba(0, 212, 255, 0.35);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />
+                  </svg>
+                </div>
+                <div class="episode-big-num" style="color: #00D4FF; text-shadow: 0 0 28px rgba(0, 212, 255, 0.65);">
+                  <span class="ep-prefix">EP</span>02
+                </div>
+              </div>
+              <div class="episode-body">
+                <div class="episode-title-group">
+                  <span class="episode-meta-tag">EPISODE 02 // WEB ARCHITECTURE</span>
+                  <h4 class="episode-title">First Reactive Canvas</h4>
+                </div>
+                <p class="episode-desc">
+                  Diving into the visual web: crafting pixel-perfect markup with semantic HTML5, modern CSS3 layout engines, and dynamic JavaScript interactions.
+                </p>
+                <div class="episode-tags">
+                  <span class="episode-tag-pill">HTML5 &amp; CSS3</span>
+                  <span class="episode-tag-pill">Vanilla JS</span>
+                  <span class="episode-tag-pill">UI Mechanics</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ep 3 -->
+            <div class="episode-card">
+              <div class="episode-hero">
+                <svg viewBox="0 0 360 165" preserveAspectRatio="none" class="episode-art-bg">
+                  <defs>
+                    <linearGradient id="epS1E3_bg" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#1e0a2d" />
+                      <stop offset="60%" stop-color="#10041a" />
+                      <stop offset="100%" stop-color="#06020c" />
+                    </linearGradient>
+                    <radialGradient id="epS1E3_glow" cx="80%" cy="50%" r="65%">
+                      <stop offset="0%" stop-color="rgba(168, 85, 247, 0.45)" />
+                      <stop offset="100%" stop-color="transparent" />
+                    </radialGradient>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#epS1E3_bg)" />
+                  <circle cx="280" cy="80" r="130" fill="url(#epS1E3_glow)" />
+                  <line x1="45" y1="45" x2="95" y2="95" stroke="rgba(168,85,247,0.25)" stroke-width="1.5" />
+                  <line x1="95" y1="95" x2="145" y2="45" stroke="rgba(168,85,247,0.25)" stroke-width="1.5" />
+                  <circle cx="45" cy="45" r="5" fill="#A855F7" />
+                  <circle cx="95" cy="95" r="6" fill="#C084FC" />
+                  <circle cx="145" cy="45" r="5" fill="#A855F7" />
+                  <text x="24" y="140" fill="rgba(168,85,247,0.22)" font-family="monospace" font-size="20" font-weight="bold">O(log N) // TREE_NODE</text>
+                </svg>
+                <div class="episode-theme-icon" style="background: rgba(168, 85, 247, 0.12); border-color: rgba(168, 85, 247, 0.35);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                  </svg>
+                </div>
+                <div class="episode-big-num" style="color: #A855F7; text-shadow: 0 0 28px rgba(168, 85, 247, 0.65);">
+                  <span class="ep-prefix">EP</span>03
+                </div>
+              </div>
+              <div class="episode-body">
+                <div class="episode-title-group">
+                  <span class="episode-meta-tag">EPISODE 03 // DISCIPLINE</span>
+                  <h4 class="episode-title">Algorithmic Foundations</h4>
+                </div>
+                <p class="episode-desc">
+                  Developing computational problem-solving discipline. Writing data structures, optimizing loops, and building foundational mental models.
+                </p>
+                <div class="episode-tags">
+                  <span class="episode-tag-pill">Algorithms</span>
+                  <span class="episode-tag-pill">Data Structures</span>
+                  <span class="episode-tag-pill">Problem Solving</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= PANEL 1: SEASON 2 (DATA SCIENCE) ================= -->
+        <div class="journey-season-panel" id="seasonPanel1">
+          <div class="season-panel-header">
+            <span class="season-title-badge">SEASON 02</span>
+            <h3 class="season-panel-name">Data Science</h3>
+          </div>
+
+          <div class="season-episodes-grid">
+            <!-- Ep 1 -->
+            <div class="episode-card">
+              <div class="episode-hero">
+                <svg viewBox="0 0 360 165" preserveAspectRatio="none" class="episode-art-bg">
+                  <defs>
+                    <linearGradient id="epS2E1_bg" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#062317" />
+                      <stop offset="60%" stop-color="#03120c" />
+                      <stop offset="100%" stop-color="#010705" />
+                    </linearGradient>
+                    <radialGradient id="epS2E1_glow" cx="80%" cy="50%" r="65%">
+                      <stop offset="0%" stop-color="rgba(16, 185, 129, 0.45)" />
+                      <stop offset="100%" stop-color="transparent" />
+                    </radialGradient>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#epS2E1_bg)" />
+                  <circle cx="280" cy="80" r="130" fill="url(#epS2E1_glow)" />
+                  <path d="M 10 130 Q 80 130 110 50 Q 140 130 210 130" fill="none" stroke="rgba(16,185,129,0.3)" stroke-width="2" />
+                  <text x="24" y="60" fill="rgba(16,185,129,0.22)" font-family="monospace" font-size="22" font-weight="bold">CS // FOUNDATIONS</text>
+                  <text x="24" y="95" fill="rgba(255,255,255,0.08)" font-family="monospace" font-size="14">P(X &le; x) = &int; f(t) dt</text>
+                </svg>
+                <div class="episode-theme-icon" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" />
+                  </svg>
+                </div>
+                <div class="episode-big-num" style="color: #10B981; text-shadow: 0 0 28px rgba(16, 185, 129, 0.65);">
+                  <span class="ep-prefix">EP</span>01
+                </div>
+              </div>
+              <div class="episode-body">
+                <div class="episode-title-group">
+                  <span class="episode-meta-tag">EPISODE 01 // FOUNDATIONS</span>
+                  <h4 class="episode-title">Computer Science Foundations</h4>
+                </div>
+                <p class="episode-desc">
+                  Deep dive into computational systems: data structures, algorithmic complexity, discrete mathematics, and software design principles.
+                </p>
+                <div class="episode-tags">
+                  <span class="episode-tag-pill">Computer Science</span>
+                  <span class="episode-tag-pill">Algorithms</span>
+                  <span class="episode-tag-pill">Systems Design</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ep 2 -->
+            <div class="episode-card">
+              <div class="episode-hero">
+                <svg viewBox="0 0 360 165" preserveAspectRatio="none" class="episode-art-bg">
+                  <defs>
+                    <linearGradient id="epS2E2_bg" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#261b05" />
+                      <stop offset="60%" stop-color="#140e02" />
+                      <stop offset="100%" stop-color="#080500" />
+                    </linearGradient>
+                    <radialGradient id="epS2E2_glow" cx="80%" cy="50%" r="65%">
+                      <stop offset="0%" stop-color="rgba(251, 191, 36, 0.45)" />
+                      <stop offset="100%" stop-color="transparent" />
+                    </radialGradient>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#epS2E2_bg)" />
+                  <circle cx="280" cy="80" r="130" fill="url(#epS2E2_glow)" />
+                  <rect x="25" y="85" width="14" height="45" rx="3" fill="rgba(251,191,36,0.3)" />
+                  <rect x="45" y="65" width="14" height="65" rx="3" fill="rgba(251,191,36,0.45)" />
+                  <rect x="65" y="45" width="14" height="85" rx="3" fill="rgba(251,191,36,0.6)" />
+                  <rect x="85" y="30" width="14" height="100" rx="3" fill="rgba(251,191,36,0.75)" />
+                  <text x="110" y="60" fill="rgba(251,191,36,0.22)" font-family="monospace" font-size="20" font-weight="bold">import pandas as pd</text>
+                  <text x="110" y="90" fill="rgba(255,255,255,0.08)" font-family="monospace" font-size="14">df.plot(kind='bar')</text>
+                </svg>
+                <div class="episode-theme-icon" style="background: rgba(251, 191, 36, 0.12); border-color: rgba(251, 191, 36, 0.35);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
+                  </svg>
+                </div>
+                <div class="episode-big-num" style="color: #FBBF24; text-shadow: 0 0 28px rgba(251, 191, 36, 0.65);">
+                  <span class="ep-prefix">EP</span>02
+                </div>
+              </div>
+              <div class="episode-body">
+                <div class="episode-title-group">
+                  <span class="episode-meta-tag">EPISODE 02 // DATA PIPELINES</span>
+                  <h4 class="episode-title">Python Analytics &amp; Pipelines</h4>
+                </div>
+                <p class="episode-desc">
+                  2 years of specialized data science experience. Building data pipelines, statistical plotting with Matplotlib, querying relational databases, and data wrangling.
+                </p>
+                <div class="episode-tags">
+                  <span class="episode-tag-pill">Python &amp; Java</span>
+                  <span class="episode-tag-pill">Matplotlib</span>
+                  <span class="episode-tag-pill">Data Pipelines</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ep 3 -->
+            <div class="episode-card">
+              <div class="episode-hero">
+                <svg viewBox="0 0 360 165" preserveAspectRatio="none" class="episode-art-bg">
+                  <defs>
+                    <linearGradient id="epS2E3_bg" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#270714" />
+                      <stop offset="60%" stop-color="#14030a" />
+                      <stop offset="100%" stop-color="#080104" />
+                    </linearGradient>
+                    <radialGradient id="epS2E3_glow" cx="80%" cy="50%" r="65%">
+                      <stop offset="0%" stop-color="rgba(244, 63, 94, 0.45)" />
+                      <stop offset="100%" stop-color="transparent" />
+                    </radialGradient>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#epS2E3_bg)" />
+                  <circle cx="280" cy="80" r="130" fill="url(#epS2E3_glow)" />
+                  <line x1="30" y1="50" x2="80" y2="90" stroke="rgba(244,63,94,0.3)" stroke-width="1.5" />
+                  <line x1="30" y1="120" x2="80" y2="90" stroke="rgba(244,63,94,0.3)" stroke-width="1.5" />
+                  <line x1="80" y1="90" x2="135" y2="60" stroke="rgba(244,63,94,0.3)" stroke-width="1.5" />
+                  <circle cx="30" cy="50" r="5" fill="#F43F5E" />
+                  <circle cx="30" cy="120" r="5" fill="#F43F5E" />
+                  <circle cx="80" cy="90" r="6" fill="#FDA4AF" />
+                  <circle cx="135" cy="60" r="5" fill="#F43F5E" />
+                  <text x="24" y="145" fill="rgba(244,63,94,0.22)" font-family="monospace" font-size="20" font-weight="bold">NEURAL_NET // &sigma;(Wx+b)</text>
+                </svg>
+                <div class="episode-theme-icon" style="background: rgba(244, 63, 94, 0.12); border-color: rgba(244, 63, 94, 0.35);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#F43F5E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                  </svg>
+                </div>
+                <div class="episode-big-num" style="color: #F43F5E; text-shadow: 0 0 28px rgba(244, 63, 94, 0.65);">
+                  <span class="ep-prefix">EP</span>03
+                </div>
+              </div>
+              <div class="episode-body">
+                <div class="episode-title-group">
+                  <span class="episode-meta-tag">EPISODE 03 // ALGORITHMIC INTEL</span>
+                  <h4 class="episode-title">Machine Learning &amp; Inference</h4>
+                </div>
+                <p class="episode-desc">
+                  Applying machine learning algorithms to model complex patterns, evaluating performance metrics, and extracting predictive signals from large datasets.
+                </p>
+                <div class="episode-tags">
+                  <span class="episode-tag-pill">Machine Learning</span>
+                  <span class="episode-tag-pill">Predictive Modeling</span>
+                  <span class="episode-tag-pill">Analytics</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= PANEL 2: SEASON 3 (BUSINESS MANAGEMENT) ================= -->
+        <div class="journey-season-panel" id="seasonPanel2">
+          <div class="season-panel-header">
+            <span class="season-title-badge">SEASON 03</span>
+            <h3 class="season-panel-name">Business Management</h3>
+          </div>
+
+          <div class="season-episodes-grid">
+            <!-- Ep 1 -->
+            <div class="episode-card">
+              <div class="episode-hero">
+                <svg viewBox="0 0 360 165" preserveAspectRatio="none" class="episode-art-bg">
+                  <defs>
+                    <linearGradient id="epS3E1_bg" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#0f142e" />
+                      <stop offset="60%" stop-color="#080a18" />
+                      <stop offset="100%" stop-color="#03040b" />
+                    </linearGradient>
+                    <radialGradient id="epS3E1_glow" cx="80%" cy="50%" r="65%">
+                      <stop offset="0%" stop-color="rgba(129, 140, 248, 0.45)" />
+                      <stop offset="100%" stop-color="transparent" />
+                    </radialGradient>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#epS3E1_bg)" />
+                  <circle cx="280" cy="80" r="130" fill="url(#epS3E1_glow)" />
+                  <circle cx="70" cy="80" r="45" fill="none" stroke="rgba(129,140,248,0.25)" stroke-width="1.5" />
+                  <circle cx="70" cy="80" r="25" fill="none" stroke="rgba(129,140,248,0.35)" stroke-width="1.5" />
+                  <text x="125" y="65" fill="rgba(129,140,248,0.22)" font-family="monospace" font-size="20" font-weight="bold">STRATEGY // MOAT</text>
+                  <text x="125" y="95" fill="rgba(255,255,255,0.08)" font-family="monospace" font-size="14">Competitive Vision</text>
+                </svg>
+                <div class="episode-theme-icon" style="background: rgba(129, 140, 248, 0.12); border-color: rgba(129, 140, 248, 0.35);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+                  </svg>
+                </div>
+                <div class="episode-big-num" style="color: #818CF8; text-shadow: 0 0 28px rgba(129, 140, 248, 0.65);">
+                  <span class="ep-prefix">EP</span>01
+                </div>
+              </div>
+              <div class="episode-body">
+                <div class="episode-title-group">
+                  <span class="episode-meta-tag">EPISODE 01 // STRATEGY</span>
+                  <h4 class="episode-title">Corporate Strategy &amp; Leadership</h4>
+                </div>
+                <p class="episode-desc">
+                  Mastering high-level corporate frameworks, competitive advantages, market dynamics, and leadership strategy to steer modern tech organizations.
+                </p>
+                <div class="episode-tags">
+                  <span class="episode-tag-pill">Enterprise Strategy</span>
+                  <span class="episode-tag-pill">Market Dynamics</span>
+                  <span class="episode-tag-pill">Leadership</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ep 2 -->
+            <div class="episode-card">
+              <div class="episode-hero">
+                <svg viewBox="0 0 360 165" preserveAspectRatio="none" class="episode-art-bg">
+                  <defs>
+                    <linearGradient id="epS3E2_bg" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#052422" />
+                      <stop offset="60%" stop-color="#021312" />
+                      <stop offset="100%" stop-color="#010707" />
+                    </linearGradient>
+                    <radialGradient id="epS3E2_glow" cx="80%" cy="50%" r="65%">
+                      <stop offset="0%" stop-color="rgba(45, 212, 191, 0.45)" />
+                      <stop offset="100%" stop-color="transparent" />
+                    </radialGradient>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#epS3E2_bg)" />
+                  <circle cx="280" cy="80" r="130" fill="url(#epS3E2_glow)" />
+                  <path d="M 20 45 L 180 45 M 35 75 L 210 75 M 10 105 L 170 105" stroke="rgba(45,212,191,0.22)" stroke-width="2" stroke-linecap="round" stroke-dasharray="8 6" />
+                  <text x="24" y="140" fill="rgba(45,212,191,0.22)" font-family="monospace" font-size="20" font-weight="bold">VELOCITY // &Delta;t &rarr; 0</text>
+                </svg>
+                <div class="episode-theme-icon" style="background: rgba(45, 212, 191, 0.12); border-color: rgba(45, 212, 191, 0.35);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                </div>
+                <div class="episode-big-num" style="color: #2DD4BF; text-shadow: 0 0 28px rgba(45, 212, 191, 0.65);">
+                  <span class="ep-prefix">EP</span>02
+                </div>
+              </div>
+              <div class="episode-body">
+                <div class="episode-title-group">
+                  <span class="episode-meta-tag">EPISODE 02 // OPERATIONS</span>
+                  <h4 class="episode-title">Operations &amp; Decision Velocity</h4>
+                </div>
+                <p class="episode-desc">
+                  Designing efficient operational systems, eliminating execution friction, and optimizing decision velocity to drive measurable business outcomes.
+                </p>
+                <div class="episode-tags">
+                  <span class="episode-tag-pill">Operations</span>
+                  <span class="episode-tag-pill">Process Optimization</span>
+                  <span class="episode-tag-pill">Decision Velocity</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ep 3 -->
+            <div class="episode-card">
+              <div class="episode-hero">
+                <svg viewBox="0 0 360 165" preserveAspectRatio="none" class="episode-art-bg">
+                  <defs>
+                    <linearGradient id="epS3E3_bg" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#2a1205" />
+                      <stop offset="60%" stop-color="#140702" />
+                      <stop offset="100%" stop-color="#080301" />
+                    </linearGradient>
+                    <radialGradient id="epS3E3_glow" cx="80%" cy="50%" r="65%">
+                      <stop offset="0%" stop-color="rgba(251, 146, 60, 0.45)" />
+                      <stop offset="100%" stop-color="transparent" />
+                    </radialGradient>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#epS3E3_bg)" />
+                  <circle cx="280" cy="80" r="130" fill="url(#epS3E3_glow)" />
+                  <path d="M 20 130 Q 80 120 120 70 T 210 25" fill="none" stroke="rgba(251,146,60,0.4)" stroke-width="2.5" />
+                  <polygon points="210,25 200,30 205,38" fill="rgba(251,146,60,0.8)" />
+                  <text x="24" y="55" fill="rgba(251,146,60,0.22)" font-family="monospace" font-size="20" font-weight="bold">SCALE // UNIT_ECON</text>
+                  <text x="24" y="90" fill="rgba(255,255,255,0.08)" font-family="monospace" font-size="14">Margin &uarr; 300% Growth</text>
+                </svg>
+                <div class="episode-theme-icon" style="background: rgba(251, 146, 60, 0.12); border-color: rgba(251, 146, 60, 0.35);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#FB923C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" />
+                  </svg>
+                </div>
+                <div class="episode-big-num" style="color: #FB923C; text-shadow: 0 0 28px rgba(251, 146, 60, 0.65);">
+                  <span class="ep-prefix">EP</span>03
+                </div>
+              </div>
+              <div class="episode-body">
+                <div class="episode-title-group">
+                  <span class="episode-meta-tag">EPISODE 03 // SCALE</span>
+                  <h4 class="episode-title">Managerial Economics &amp; Growth</h4>
+                </div>
+                <p class="episode-desc">
+                  Understanding unit economics, resource allocation, financial modeling, and building high-trust cross-functional collaboration.
+                </p>
+                <div class="episode-tags">
+                  <span class="episode-tag-pill">Unit Economics</span>
+                  <span class="episode-tag-pill">Managerial Acumen</span>
+                  <span class="episode-tag-pill">Growth Strategy</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= PANEL 3: SEASON 4 (START UP) ================= -->
+        <div class="journey-season-panel" id="seasonPanel3">
+          <div class="season-panel-header">
+            <span class="season-title-badge" style="background: #9B51E0;">SEASON 04</span>
+            <h3 class="season-panel-name">Start Up</h3>
+          </div>
+
+          <div class="season-episodes-grid">
+            <!-- Ep 1: Management Hub -->
+            <div class="episode-card" style="cursor: pointer;" onclick="openProjectModal('Management Hub', 'Academic &amp; Exam Preparation Platform for IIT Madras BS Students', 'A student-focused educational platform for IIT Madras BS students, providing study notes, previous year questions (PYQs), exam preparation resources, and academic guidance.', 'React, Vite, Node.js, Express.js, Firebase (Firestore &amp; Auth), Cloudinary, Git, GitHub', 'TOP 1', 'images/management_hub_journey.png', 'https://management-hub-1c14c.web.app/', '2026', 'HD')">
+              <div class="episode-hero" style="background: #ffffff; padding: 0; position: relative;">
+                <span class="episode-badge" style="background: #9B51E0;">EP 01</span>
+                <img src="images/management_hub_journey.png" alt="Management Hub" class="episode-img" style="object-position: center; object-fit: contain; width: 100%; height: 100%; display: block; background: #ffffff;" />
+                <div class="episode-gradient"></div>
+              </div>
+              <div class="episode-body">
+                <div class="episode-title-group">
+                  <span class="episode-meta-tag" style="color: #9B51E0;">PILOT EPISODE // EDTECH STARTUP</span>
+                  <h4 class="episode-title">Management Hub</h4>
+                </div>
+                <p class="episode-desc">
+                  Academic &amp; Exam Preparation Platform for IIT Madras BS Students. Providing study notes, previous year questions (PYQs), exam preparation resources, and academic guidance.
+                </p>
+                <div class="episode-tags">
+                  <span class="episode-tag-pill">EdTech Startup</span>
+                  <span class="episode-tag-pill">IIT Madras BS</span>
+                  <span class="episode-tag-pill">Full-Stack Web</span>
+                  <span class="episode-tag-pill">Firebase</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="journey-season-panel" id="seasonPanel4">
+          <div class="season-panel-header">
+            <span class="season-title-badge">SEASON 05</span>
+            <h3 class="season-panel-name">Coming Soon</h3>
+          </div>
+
+          <div class="season-coming-soon" style="min-height: 220px; background: #141414; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; display: flex; align-items: center; justify-content: center; text-align: center;">
+            <h3 class="coming-soon-title" style="font-size: clamp(2.8rem, 6vw, 4.4rem); font-family: 'Bebas Neue', 'Montserrat', sans-serif; letter-spacing: 0.14em; color: #FFFFFF; margin: 0; text-shadow: 0 0 35px rgba(229, 9, 20, 0.55);">
+              COMING SOON
+            </h3>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= 8. OUTRO & CONTACT (THE NEXT EPISODE) ================= -->
+    <section class="next-episode-section" id="contact">
+  <div class="next-episode-container">
+    
+    <!-- Eyebrow: THE NEXT EPISODE flanked by red lines -->
+    <div class="next-ep-eyebrow">
+      <span class="next-ep-red-line"></span>
+      <span class="next-ep-tag" id="contactEyebrowTag">THE NEXT EPISODE</span>
+      <span class="next-ep-red-line"></span>
+    </div>
+
+    <!-- Big Main Title -->
+    <h2 class="next-ep-main-title" id="contactMainTitle">TO BE CONTINUED...</h2>
+
+    <!-- Name & Role -->
+    <h3 class="next-ep-name" id="contactName">ASHISH</h3>
+    <p class="next-ep-role" id="contactRole">MASTERING BUSINESS MANAGEMENT</p>
+
+    <!-- Social Channels Hub (Original Colorful Social Media Icons) -->
+    <div class="social-channels-wrapper" style="margin: 8px auto 26px auto; width: 100%; text-align: center;">
+      <div class="social-channels-grid" style="display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; justify-content: center !important; align-items: center !important; gap: 16px !important;">
+        <!-- LinkedIn (Original LinkedIn Blue Squircle) -->
+        <a href="https://www.linkedin.com/in/ashish-singh-993689312" target="_blank" rel="noopener noreferrer" class="social-orig-icon icon-linkedin" id="socialCardLinkedin" title="LinkedIn: Ashish Singh" aria-label="LinkedIn">
+          <svg viewBox="0 0 48 48" class="orig-svg" width="44" height="44">
+            <rect x="1" y="1" width="46" height="46" rx="11" fill="#0A66C2"/>
+            <path fill="#FFFFFF" d="M14 19h4.6v15H14zM16.3 12.2c1.5 0 2.7 1.2 2.7 2.7s-1.2 2.7-2.7 2.7-2.7-1.2-2.7-2.7 1.2-2.7 2.7-2.7zM21.6 19h4.4v2.1h.1c.6-1.2 2.2-2.5 4.5-2.5 4.8 0 5.7 3.2 5.7 7.3V34h-4.6v-7.3c0-1.7 0-4-2.5-4s-2.8 1.9-2.8 3.9V34h-4.8z"/>
+          </svg>
+          <span id="socialHandleLinkedin" style="display:none;">Ashish Singh</span>
+        </a>
+
+        <!-- GitHub (Original GitHub Dark Circle) -->
+        <a href="https://github.com/ashusingh06" target="_blank" rel="noopener noreferrer" class="social-orig-icon icon-github" id="socialCardGithub" title="GitHub: ashusingh06" aria-label="GitHub">
+          <svg viewBox="0 0 48 48" class="orig-svg" width="44" height="44">
+            <circle cx="24" cy="24" r="23" fill="#181717" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+            <path fill="#FFFFFF" d="M24 10c-7.7 0-14 6.3-14 14 0 6.2 4 11.4 9.6 13.3.7.1 1-.3 1-.7v-2.5c-3.9.8-4.7-1.9-4.7-1.9-.6-1.6-1.5-2.1-1.5-2.1-1.3-.9.1-.9.1-.9 1.4.1 2.2 1.5 2.2 1.5 1.2 2.2 3.3 1.5 4.1 1.2.1-.9.5-1.5.9-1.9-3.1-.4-6.4-1.6-6.4-7 0-1.5.5-2.8 1.4-3.8-.1-.4-.6-1.8.1-3.7 0 0 1.2-.4 3.9 1.5 1.1-.3 2.3-.5 3.5-.5s2.4.2 3.5.5c2.7-1.9 3.9-1.5 3.9-1.5.7 1.9.2 3.3.1 3.7.9 1 1.4 2.3 1.4 3.8 0 5.4-3.3 6.6-6.4 7 .5.4.9 1.2.9 2.5v3.7c0 .4.3.8 1 .7 5.6-1.9 9.6-7.1 9.6-13.3 0-7.7-6.3-14-14-14z"/>
+          </svg>
+          <span id="socialHandleGithub" style="display:none;">ashusingh06</span>
+        </a>
+
+        <!-- Gmail (Original Official 4-Color Google Gmail M) -->
+        <a href="mailto:aashishsinghh06@gmail.com" class="social-orig-icon icon-gmail" id="socialCardEmail" title="Email: aashishsinghh06@gmail.com" aria-label="Gmail">
+          <svg viewBox="0 0 48 48" class="orig-svg" width="44" height="44">
+            <rect x="1" y="1" width="46" height="46" rx="11" fill="#FFFFFF" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+            <!-- Left Blue Column -->
+            <path fill="#4285F4" d="M10 33V18.7l6.8 5.1V33h-4.3c-1.4 0-2.5-1.1-2.5-2.5z"/>
+            <!-- Right Green Column -->
+            <path fill="#34A853" d="M38 33V18.7l-6.8 5.1V33h4.3c1.4 0 2.5-1.1 2.5-2.5z"/>
+            <!-- Center Red V-Shape -->
+            <path fill="#EA4335" d="M31.2 14.2L24 19.6l-7.2-5.4L10 18.7l14 10.5 14-10.5-6.8-4.5z"/>
+            <!-- Top Right Yellow Corner -->
+            <path fill="#FBBC05" d="M31.2 14.2V23.8L38 18.7v-4.5c0-2-2.3-3.1-3.9-1.9l-2.9 1.9z"/>
+            <!-- Top Left Dark Red Corner -->
+            <path fill="#C5221F" d="M16.8 14.2V23.8L10 18.7v-4.5c0-2 2.3-3.1 3.9-1.9l2.9 1.9z"/>
+          </svg>
+          <span id="socialHandleEmail" style="display:none;">aashishsinghh06@gmail.com</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Action Buttons: Watch Again & Replay Opening (Above Contact Form) -->
+    <div class="next-ep-actions">
+      <button class="btn-watch-again" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Back to Top">
+        <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+        <span>Back to Top</span>
+      </button>
+      <button type="button" class="btn-replay-opening" onclick="replayIntro()" title="Replay Opening">
+        <svg class="btn-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <span>Replay Opening</span>
+      </button>
+    </div>
+
+    <!-- Netflix Style Contact Form -->
+    <div class="contact-form-wrapper">
+      <form class="netflix-contact-form" id="portfolioContactForm" onsubmit="handleContactSubmit(event)">
+        <div class="form-row-2col">
+          <div class="contact-form-group">
+            <label for="contactFirstName">First Name <span class="req-star">*</span></label>
+            <input type="text" id="contactFirstName" name="firstName" class="contact-input" placeholder="" required />
+          </div>
+          <div class="contact-form-group">
+            <label for="contactLastName">Last Name <span class="req-star">*</span></label>
+            <input type="text" id="contactLastName" name="lastName" class="contact-input" placeholder="" required />
+          </div>
+        </div>
+
+        <div class="form-row-2col">
+          <div class="contact-form-group">
+            <label for="contactEmail">Email Address <span class="req-star">*</span></label>
+            <input type="email" id="contactEmail" name="email" class="contact-input" placeholder="" required />
+          </div>
+          <div class="contact-form-group">
+            <label for="contactSubject">Subject</label>
+            <input type="text" id="contactSubject" name="subject" class="contact-input" placeholder="" />
+          </div>
+        </div>
+
+        <div class="contact-form-group">
+          <label for="contactMessage">Type Your Message <span class="req-star">*</span></label>
+          <textarea id="contactMessage" name="message" class="contact-textarea" rows="4" placeholder="" required></textarea>
+        </div>
+
+        <!-- Consent Checkbox -->
+        <div class="contact-consent-row">
+          <label class="consent-checkbox-label">
+            <input type="checkbox" id="contactConsent" name="consent" class="consent-checkbox" required />
+            <span class="consent-text">I consent to having my submitted details processed to get in touch.</span>
+          </label>
+        </div>
+
+        <!-- Status Message Box -->
+        <div class="contact-status-msg" id="contactStatusMsg" style="display: none;"></div>
+
+        <!-- Submit Button -->
+        <div class="contact-submit-row">
+          <button type="submit" class="btn-submit-message" id="contactSubmitBtn">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+            <span>Send Message</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ================= PERSONALIZED PORTFOLIO PROMO CARD ================= -->
+    <div class="portfolio-promo-card" id="portfolioPromoCard" style="max-width: 680px; margin: 32px auto 40px auto; background: linear-gradient(145deg, #16161a 0%, #0d0d10 100%); border: 1px solid rgba(255, 255, 255, 0.12); border-top: 3px solid #E50914; border-radius: 12px; padding: 34px 36px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px rgba(229, 9, 20, 0.1); text-align: center; box-sizing: border-box;">
+      
+      <!-- Top Eyebrow Tag -->
+      <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(229, 9, 20, 0.12); border: 1px solid rgba(229, 9, 20, 0.35); border-radius: 20px; padding: 5px 14px; margin-bottom: 14px;">
+        <span style="width: 7px; height: 7px; background: #E50914; border-radius: 50%; box-shadow: 0 0 8px #E50914; display: inline-block;"></span>
+        <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; color: #FF4D4D; text-transform: uppercase; font-family: 'Montserrat', sans-serif;">OPEN FOR COMMISSIONS</span>
+      </div>
+
+      <!-- Main Headline -->
+      <h3 style="font-size: clamp(1.35rem, 3.2vw, 1.8rem); font-weight: 800; color: #FFFFFF; letter-spacing: 0.02em; line-height: 1.3; margin: 0 0 10px 0; font-family: 'Montserrat', sans-serif;">
+        Want a Personalized Portfolio Website?
+      </h3>
+
+      <!-- Subtitle Description -->
+      <p style="font-size: 0.95rem; line-height: 1.6; color: #A3A3A3; max-width: 520px; margin: 0 auto 26px auto; font-family: 'Montserrat', sans-serif;">
+        Let’s build a professional portfolio that reflects your skills and personality. Contact me to get started.
+      </p>
+      
+      <!-- Interactive Contact Tiles (Email & Telegram) -->
+      <div class="promo-contacts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; text-align: left;">
+        
+        <!-- Email Tile -->
+        <a href="mailto:aashishsinghh06@gmail.com" class="promo-tile-link" id="promoEmailLink" style="display: flex; align-items: center; justify-content: space-between; gap: 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; padding: 14px 18px; text-decoration: none; color: inherit; transition: all 0.25s ease;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'; this.style.borderColor='rgba(229, 9, 20, 0.6)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'; this.style.borderColor='rgba(255, 255, 255, 0.12)'; this.style.transform='translateY(0)';">
+          <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+            <div style="width: 42px; height: 42px; border-radius: 9px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+              <!-- Official Gmail 4-Color SVG -->
+              <svg viewBox="0 0 48 48" width="26" height="26">
+                <path fill="#4285F4" d="M10 33V18.7l6.8 5.1V33h-4.3c-1.4 0-2.5-1.1-2.5-2.5z"/>
+                <path fill="#34A853" d="M38 33V18.7l-6.8 5.1V33h4.3c1.4 0 2.5-1.1 2.5-2.5z"/>
+                <path fill="#EA4335" d="M10 18.7V14c0-1.4 1.1-2.5 2.5-2.5h1.2l10.3 7.7 10.3-7.7h1.2c1.4 0 2.5 1.1 2.5 2.5v4.7L24 29 10 18.7z"/>
+                <path fill="#FBBC05" d="M10 14l14 10.3L38 14"/>
+              </svg>
+            </div>
+            <div style="display: flex; flex-direction: column; overflow: hidden;">
+              <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: #888888; text-transform: uppercase;">EMAIL</span>
+              <span style="font-size: 13px; font-weight: 700; color: #FFFFFF; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" id="promoEmailVal">aashishsinghh06@gmail.com</span>
+            </div>
+          </div>
+          <span style="font-size: 16px; color: #E50914; font-weight: 800; flex-shrink: 0;">↗</span>
+        </a>
+
+        <!-- Telegram Tile -->
+        <a href="https://t.me/MrBlessing143" target="_blank" rel="noopener noreferrer" class="promo-tile-link" id="promoTelegramLink" style="display: flex; align-items: center; justify-content: space-between; gap: 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; padding: 14px 18px; text-decoration: none; color: inherit; transition: all 0.25s ease;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'; this.style.borderColor='#229ED9'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'; this.style.borderColor='rgba(255, 255, 255, 0.12)'; this.style.transform='translateY(0)';">
+          <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+            <div style="width: 42px; height: 42px; border-radius: 9px; background: #229ED9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(34, 158, 217, 0.4);">
+              <!-- Official Telegram Paper Plane SVG -->
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="#FFFFFF">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"/>
+              </svg>
+            </div>
+            <div style="display: flex; flex-direction: column; overflow: hidden;">
+              <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: #888888; text-transform: uppercase;">TELEGRAM</span>
+              <span style="font-size: 13px; font-weight: 700; color: #FFFFFF; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" id="promoTelegramVal">@MrBlessing143</span>
+            </div>
+          </div>
+          <span style="font-size: 16px; color: #229ED9; font-weight: 800; flex-shrink: 0;">↗</span>
+        </a>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+  </main>
+
+  <!-- ================= MODAL DIALOG ================= -->
+  <div class="modal-overlay" id="projectModal" onclick="closeModalOnOverlay(event)">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeModal()">✕</button>
+      <div class="modal-hero">
+        <img src="images/default_hero.svg" alt="Featured Project" id="modalImg" style="object-fit: cover; background: #141414;" />
+        <div class="modal-hero-gradient"></div>
+      </div>
+      <div class="modal-body">
+        <h2 class="modal-title" id="modalTitle">Project Title</h2>
+        <div class="modal-meta">
+          <span class="match-score" id="modalMatch">98% Match</span>
+          <span class="meta-tag" id="modalYearTag">2026</span>
+          <span class="meta-hd" id="modalQualityTag">HD</span>
+          <span id="modalSubtitle" style="color:#aaa;">Subtitle</span>
+        </div>
+        <div class="modal-actions" id="modalActions">
+          <a href="#" target="_blank" rel="noopener noreferrer" class="btn-modal-play" id="modalPlayBtn">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <span>Play</span>
+          </a>
+        </div>
+        <p class="modal-desc" id="modalDesc">
+          Detailed project description will be populated here dynamically.
+        </p>
+        <div class="modal-specs">
+          <div class="spec-group">
+            <h4>Stack & Technologies</h4>
+            <p id="modalStack">React, CSS3, JavaScript</p>
+          </div>
+          <div class="spec-group">
+            <h4>Role</h4>
+            <p>Portfolio Lead</p>
+          </div>
+          <div class="spec-group">
+            <h4>Status</h4>
+            <p>Production Ready</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= RESUME PREVIEW MODAL ================= -->
+  <div class="resume-modal-overlay" id="resumeModal" onclick="closeResumeModalOnOverlay(event)">
+    <div class="resume-modal-card">
+      <div class="resume-modal-header">
+        <h3>
+          <svg style="width:22px;height:22px;color:#E50914;" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+          <span id="resumeModalTitle">Resume — Ashish Singh</span>
+        </h3>
+        <div class="resume-modal-actions">
+          <a id="btnModalOpenFull" href="images/ashish_cv.jpg" target="_blank" class="btn-modal-print" style="text-decoration:none; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); font-weight:600;">
+            <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            <span>Full View</span>
+          </a>
+          <button class="btn-modal-print" onclick="downloadResume()" style="background:#E50914; color:#fff; border-color:#E50914; font-weight:700;">
+            <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <span>Download Resume</span>
+          </button>
+          <button class="btn-modal-close" onclick="closeResumeModal()" title="Close">×</button>
+        </div>
+      </div>
+
+      <div class="resume-modal-body" style="padding: 0; min-height: 65vh; max-height: 85vh; overflow-y: auto;">
+        <!-- Embedded Image Resume Viewer -->
+        <div id="resumeImageViewerContainer" style="display: block; width: 100%; text-align: center; padding: 18px 14px; background: #0c0d12;">
+          <img id="resumeImageFrame" src="images/ashish_cv.jpg?v=3" alt="Ashish Singh Resume" style="max-width: 100%; width: 720px; height: auto; border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,0.85); margin: 0 auto; display: block;" />
+        </div>
+
+        <!-- Embedded PDF Viewer when a PDF is selected -->
+        <div id="resumePdfViewerContainer" style="display: none; width: 100%; height: 82vh;">
+          <iframe id="resumePdfFrame" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+
+        <div class="resume-doc-preview" id="printResumeArea" style="display: none; margin: 24px auto;">
+          <!-- Document Header -->
+          <div class="resume-doc-header">
+            <h1 class="resume-doc-name" id="resumeDocName"></h1>
+            <div class="resume-doc-roles"></div>
+            <div class="resume-doc-contacts"></div>
+          </div>
+
+          <!-- Professional Summary -->
+          <div class="resume-section-title">Professional Summary</div>
+          <p id="resumeDocSummary" style="margin:0 0 16px 0; font-size:0.86rem; color:#374151;"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="netflix-footer" id="footer">
+    <div class="footer-socials">
+      <a href="#home" class="footer-social-link" title="Back to Top">⬆ Back to Top</a>
+      <a href="javascript:void(0)" onclick="replayIntro()" class="footer-social-link" title="Replay Opening">🎬 Replay Opening</a>
+    </div>
+
+    <ul class="footer-links">
+      <li><a href="#home" class="footer-link">Home</a></li>
+      <li><a href="#projects" class="footer-link">Projects</a></li>
+      <li><a href="#story-section" class="footer-link">The Story</a></li>
+      <li><a href="#skills-universe" class="footer-link">Skills Universe</a></li>
+      <li><a href="#originals" class="footer-link">Originals</a></li>
+      <li><a href="#about-me" class="footer-link">About Me</a></li>
+      <li><a href="#journey" class="footer-link">My Journey</a></li>
+      <li><a href="#contact" class="footer-link">Contact</a></li>
+    </ul>
+
+    <p class="copyright">
+      © 2026 ASHISH PORTFOLIO. ALL RIGHTS RESERVED.
+    </p>
+  </footer>
+
+  <!-- Firebase SDKs (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js?v=20261025_09"></script>
+  <script src="js/firebase-service.js?v=20261025_09"></script>
+  <script src="js/intro.js"></script>
+  <script src="js/main.js?v=20261025_17"></script>
+</body>
+</html>

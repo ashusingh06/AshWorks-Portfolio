@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141418"/>
+      <stop offset="50%" stop-color="#0a0a0c"/>
+      <stop offset="100%" stop-color="#050507"/>
+    </linearGradient>
+    <radialGradient id="glowRed" cx="70%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#E50914" stop-opacity="0.35"/>
+      <stop offset="60%" stop-color="#E50914" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowDark" cx="30%" cy="70%" r="60%">
+      <stop offset="0%" stop-color="#1f2937" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#050507" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1600" height="900" fill="url(#bgGrad)"/>
+  <rect width="1600" height="900" fill="url(#glowRed)"/>
+  <rect width="1600" height="900" fill="url(#glowDark)"/>
+
+  <!-- Geometric Grid Accent -->
+  <g stroke="rgba(255,255,255,0.04)" stroke-width="1">
+    <line x1="0" y1="180" x2="1600" y2="180"/>
+    <line x1="0" y1="360" x2="1600" y2="360"/>
+    <line x1="0" y1="540" x2="1600" y2="540"/>
+    <line x1="0" y1="720" x2="1600" y2="720"/>
+    <line x1="320" y1="0" x2="320" y2="900"/>
+    <line x1="640" y1="0" x2="640" y2="900"/>
+    <line x1="960" y1="0" x2="960" y2="900"/>
+    <line x1="1280" y1="0" x2="1280" y2="900"/>
+  </g>
+
+  <!-- Cinematic Center Graphic / Silhouette Icon -->
+  <g transform="translate(1050, 420)">
+    <circle cx="0" cy="0" r="160" fill="rgba(229,9,20,0.08)" stroke="rgba(229,9,20,0.3)" stroke-width="2"/>
+    <circle cx="0" cy="0" r="120" fill="none" stroke="rgba(255,255,255,0.08)" stroke-dasharray="8 8" stroke-width="2"/>
+    <!-- Abstract Monogram / Hero Art -->
+    <path d="M-40 -50 L40 -50 L0 50 Z" fill="none" stroke="#E50914" stroke-width="6" stroke-linejoin="round"/>
+    <circle cx="0" cy="5" r="12" fill="#E50914"/>
+  </g>
+
+  <!-- Overlay Watermark -->
+  <text x="1050" y="640" fill="rgba(255,255,255,0.25)" font-family="sans-serif" font-size="20" font-weight="700" letter-spacing="6" text-anchor="middle">CINEMATIC PORTFOLIO</text>
+</svg>

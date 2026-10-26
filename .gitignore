@@ -1,0 +1,22 @@
+# Firebase configuration and credentials
+js/firebase-config.js
+.firebase/
+.firebaserc
+
+# CEO Admin Portal & Management Pages
+ceo.html
+
+# Local database & private messages
+messages.json
+data_backup.json
+
+# Dependencies & Environment
+node_modules/
+.env
+.env.local
+.env.*
+
+# Logs & OS files
+*.log
+.DS_Store
+Thumbs.db

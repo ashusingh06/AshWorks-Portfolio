@@ -1,0 +1,29 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "**/*.bat",
+      "**/*.cmd",
+      "**/*.exe",
+      "**/*.sh",
+      "server.js",
+      "package.json",
+      "package-lock.json",
+      "messages.json",
+      "data_backup.json"
+    ],
+    "rewrites": [
+      {
+        "source": "/ceo",
+        "destination": "/ceo.html"
+      },
+      {
+        "source": "/intro",
+        "destination": "/intro.html"
+      }
+    ]
+  }
+}

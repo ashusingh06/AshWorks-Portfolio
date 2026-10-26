@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AshWorks PORTFOLIO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="js/default-data.js?v=20261025_13"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #000000;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: 'Bebas Neue', -apple-system, BlinkMacSystemFont, sans-serif;
+      cursor: pointer;
+    }
+
+    /* Cinematic Vignette */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.9) 100%);
+      z-index: 10;
+    }
+
+    /* Impact Screen Flash */
+    .flash-overlay {
+      position: fixed;
+      inset: 0;
+      background: #ffffff;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .flash-overlay.animate {
+      animation: superFlash 0.35s ease-out 1.24s forwards;
+    }
+
+    /* A Comrade Original Intro Overlay (1 sec duration, solid black on initial paint to prevent any glitch) */
+    .comrade-intro {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      background: #000000;
+      pointer-events: none;
+      opacity: 1;
+      user-select: none;
+    }
+
+    .comrade-intro.animate {
+      animation: comradeIntroFadeOut 1.05s ease-in-out forwards;
+    }
+
+    .intro-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: comradeBadgeAnim 1.05s ease-in-out forwards;
+    }
+
+    .intro-prefix {
+      color: #999999;
+      font-family: 'Montserrat', sans-serif;
+      font-size: clamp(0.6rem, 0.9vw, 0.75rem);
+      font-weight: 600;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      padding-left: 0.35em;
+      margin-bottom: 2px;
+    }
+
+    .intro-brand {
+      color: #E50914; /* Netflix / Comrade Red */
+      font-family: 'Montserrat', 'Bebas Neue', sans-serif;
+      font-size: clamp(1.4rem, 2.8vw, 2.2rem);
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding-left: 0.18em;
+      line-height: 1;
+      text-shadow: 0 0 18px rgba(229, 9, 20, 0.6);
+    }
+
+    .intro-suffix {
+      color: #999999;
+      font-family: 'Montserrat', sans-serif;
+      font-size: clamp(0.55rem, 0.8vw, 0.68rem);
+      font-weight: 700;
+      letter-spacing: 0.4em;
+      padding-left: 0.4em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* Grouped Header (Name + Subtitle strictly Below It) */
+    .brand-header {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      z-index: 15;
+      pointer-events: auto;
+    }
+
+    .brand-header.animate {
+      animation: slideUpToTop 1.5s cubic-bezier(0.16, 1, 0.3, 1) 1.0s forwards;
+    }
+
+    /* Main Name Stage */
+    .name-container {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-left: 0.04em;
+    }
+
+    /* Halves - Clean bold white, completely straight, hidden off-screen until intro finishes */
+    .half {
+      display: inline-flex;
+      color: #FFFFFF;
+      font-family: 'Bebas Neue', 'Montserrat', sans-serif;
+      font-size: clamp(3.6rem, 10vw, 7.2rem);
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      line-height: 1;
+      white-space: nowrap;
+      will-change: transform, opacity;
+      opacity: 0;
+      text-shadow: 0 4px 30px rgba(0, 0, 0, 0.95), 0 0 45px rgba(229, 9, 20, 0.22);
+    }
+
+    /* Super-fast Left Half (starts right after 1s intro) */
+    .from-left {
+      transform: translateX(-120vw);
+    }
+
+    .from-left.animate {
+      animation: superFastLeft 0.28s cubic-bezier(0.05, 0.9, 0.2, 1) 1.0s both;
+    }
+
+    /* Super-fast Right Half (starts right after 1s intro) */
+    .from-right {
+      transform: translateX(120vw);
+    }
+
+    .from-right.animate {
+      animation: superFastRight 0.28s cubic-bezier(0.05, 0.9, 0.2, 1) 1.0s both;
+    }
+
+    /* Subtitle strictly BELOW the Name in Bold Netflix Red */
+    .story-subtitle {
+      margin-top: clamp(10px, 1.8vh, 18px);
+      color: #E50914; /* Netflix Red */
+      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: clamp(0.72rem, 1.25vw, 0.92rem);
+      font-weight: 800;
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      padding-left: 0.45em;
+      pointer-events: none;
+      opacity: 0;
+      text-shadow: 0 0 16px rgba(229, 9, 20, 0.7);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .story-subtitle::before,
+    .story-subtitle::after {
+      content: '';
+      width: 24px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #E50914);
+      display: inline-block;
+    }
+
+    .story-subtitle::after {
+      background: linear-gradient(90deg, #E50914, transparent);
+    }
+
+    .story-subtitle.animate {
+      animation: subtitleReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.82s forwards;
+    }
+
+    /* Photo Container - Centered with balanced headroom and clear foot room */
+    .photo-wrapper {
+      position: fixed;
+      left: 50%;
+      top: 55%;
+      transform: translate(-50%, calc(-50% + 40px));
+      opacity: 0;
+      z-index: 8;
+      pointer-events: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      will-change: transform, opacity;
+    }
+
+    /* Dim Netflix Ambient Red Backlight Behind Photo */
+    .photo-wrapper::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: clamp(320px, 48vw, 520px);
+      height: clamp(320px, 48vw, 520px);
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(229, 9, 20, 0.38) 0%, rgba(180, 0, 10, 0.18) 45%, rgba(90, 0, 5, 0.05) 65%, transparent 75%);
+      filter: blur(52px);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: -1;
+      animation: dimRedBreath 5s ease-in-out infinite alternate;
+    }
+
+    @keyframes dimRedBreath {
+      0% {
+        opacity: 0.65;
+        transform: translate(-50%, -50%) scale(0.95);
+      }
+      100% {
+        opacity: 0.92;
+        transform: translate(-50%, -50%) scale(1.05);
+      }
+    }
+
+    .photo-wrapper.animate {
+      animation: photoRevealCenter 1.1s cubic-bezier(0.16, 1, 0.3, 1) 1.65s forwards;
+    }
+
+    .profile-photo {
+      height: clamp(270px, 46vh, 430px);
+      max-width: 90vw;
+      width: auto;
+      object-fit: contain;
+      display: block;
+      filter: none;
+      position: relative;
+      z-index: 1;
+      -webkit-mask-image: linear-gradient(to bottom, #000 82%, rgba(0, 0, 0, 0.45) 94%, transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 82%, rgba(0, 0, 0, 0.45) 94%, transparent 100%);
+    }
+
+    /* Canvas for Netflix Light Streaks */
+    #ribbonCanvas {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 2;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Bottom Action Bar (Tagline + Play Button with Rounded Corners) */
+    .bottom-bar {
+      position: fixed;
+      bottom: clamp(16px, 3vh, 28px);
+      left: 50%;
+      transform: translate(-50%, 25px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      z-index: 25;
+      opacity: 0;
+      pointer-events: auto;
+      will-change: transform, opacity;
+    }
+
+    .bottom-bar.animate {
+      animation: bottomBarReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.28s forwards;
+    }
+
+    /* Tagline above the Play button - Elevated Glass Pill */
+    .role-tagline {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(14, 14, 14, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(12px);
+      padding: 7px 24px;
+      border-radius: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), 0 0 20px rgba(229, 9, 20, 0.12);
+      font-family: 'Montserrat', sans-serif;
+      font-size: clamp(0.7rem, 1.1vw, 0.86rem);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      user-select: none;
+    }
+
+    .role-primary {
+      color: #FFFFFF;
+      font-weight: 800;
+    }
+
+    .role-divider {
+      color: #E50914;
+      font-weight: 900;
+      font-size: 1.1em;
+    }
+
+    .role-secondary {
+      color: #D6D6D6;
+      font-weight: 600;
+    }
+
+    /* Play Button with Modern Netflix Styling */
+    .play-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background-color: #FFFFFF;
+      color: #000000;
+      border: none;
+      outline: none;
+      padding: 12px 38px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 22px rgba(255, 255, 255, 0.28);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+
+    .play-btn:hover {
+      transform: scale(1.05);
+      background-color: #E50914;
+      color: #FFFFFF;
+      box-shadow: 0 8px 30px rgba(229, 9, 20, 0.65);
+    }
+
+    .play-btn:active {
+      transform: scale(0.96);
+    }
+
+    .play-icon {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      flex-shrink: 0;
+      transition: transform 0.25s ease;
+    }
+
+    .play-btn:hover .play-icon {
+      transform: translateX(2px);
+    }
+
+    /* Top Left Brand Pill */
+    .top-brand-pill {
+      position: fixed;
+      top: clamp(16px, 3vh, 26px);
+      left: clamp(18px, 3.5vw, 36px);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 50;
+      user-select: none;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .top-brand-logo {
+      color: #E50914;
+      font-size: 1.35rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      line-height: 1;
+      text-shadow: 0 0 14px rgba(229, 9, 20, 0.5);
+    }
+
+    .top-brand-tag {
+      color: #FFFFFF;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    /* Top-right Profile Avatar Link */
+    .top-profile-link {
+      position: fixed;
+      top: clamp(16px, 3vh, 26px);
+      right: clamp(18px, 3.5vw, 36px);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      z-index: 50;
+      cursor: pointer;
+      background: rgba(20, 20, 20, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(10px);
+      padding: 4px 10px 4px 5px;
+      border-radius: 4px;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .top-profile-link:hover {
+      transform: scale(1.05);
+      border-color: rgba(229, 9, 20, 0.6);
+      box-shadow: 0 0 10px rgba(229, 9, 20, 0.35);
+    }
+
+    .top-profile-thumb {
+      width: 28px;
+      height: 28px;
+      border-radius: 3px;
+      object-fit: cover;
+      object-position: center 20%;
+      border: 1px solid transparent;
+      transition: border-color 0.2s ease;
+    }
+
+    .top-profile-link:hover .top-profile-thumb {
+      border-color: #FFFFFF;
+    }
+
+    .top-profile-name {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .top-profile-arrow {
+      color: #FFFFFF;
+      font-size: 0.75rem;
+      transition: transform 0.2s ease;
+    }
+
+    .top-profile-link:hover .top-profile-arrow {
+      transform: rotate(180deg);
+    }
+
+    /* Keyframes */
+    @keyframes comradeIntroFadeOut {
+      0%, 82% {
+        opacity: 1;
+        visibility: visible;
+      }
+      100% {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    @keyframes comradeBadgeAnim {
+      0% {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+      15% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      80% {
+        opacity: 1;
+        transform: scale(1.02);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.06);
+      }
+    }
+
+    @keyframes superFastLeft {
+      0% {
+        transform: translateX(-120vw);
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      85% {
+        transform: translateX(4px);
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes superFastRight {
+      0% {
+        transform: translateX(120vw);
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      85% {
+        transform: translateX(-4px);
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes superFlash {
+      0% {
+        opacity: 0.7;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+
+    /* Slide up after appearance in center - leaving comfortable breathing room from top */
+    @keyframes slideUpToTop {
+      0%, 46% {
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+      100% {
+        top: clamp(20px, 4.2vh, 38px);
+        transform: translate(-50%, 0);
+      }
+    }
+
+    /* Mobile Phones & Tablets (< 768px)
+       Moves ASHISH down below the fixed top navbar pills (.top-brand-pill & .top-profile-link)
+       so it has proper breathing room and balanced cinematic hierarchy */
+    @media (max-width: 768px) {
+      /* Top Header elements - prevent any collision/overlap on phone screens */
+      .top-brand-pill {
+        top: clamp(12px, 2.2vh, 18px);
+        left: clamp(12px, 3.2vw, 20px);
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        z-index: 60;
+      }
+
+      .top-brand-logo {
+        font-size: clamp(1.05rem, 3.8vw, 1.22rem);
+        letter-spacing: 1.2px;
+        line-height: 1;
+      }
+
+      .top-brand-tag {
+        font-size: 0.52rem;
+        letter-spacing: 0.22em;
+        line-height: 1;
+        opacity: 0.85;
+      }
+
+      .top-profile-link {
+        top: clamp(12px, 2.2vh, 18px);
+        right: clamp(12px, 3.2vw, 20px);
+        padding: 3px 8px 3px 4px;
+        gap: 5px;
+        z-index: 60;
+        background: rgba(14, 14, 14, 0.75);
+      }
+
+      .top-profile-thumb {
+        width: 24px;
+        height: 24px;
+      }
+
+      .top-profile-name {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        max-width: 75px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .top-profile-arrow {
+        font-size: 0.65rem;
+      }
+
+      @keyframes slideUpToTop {
+        0%, 46% {
+          top: 50%;
+          transform: translate(-50%, -50%);
+        }
+        100% {
+          top: clamp(75px, 11vh, 95px);
+          transform: translate(-50%, 0);
+        }
+      }
+
+      .brand-header {
+        width: 100%;
+        padding: 0 16px;
+      }
+
+      .half {
+        font-size: clamp(2.8rem, 13vw, 4.4rem);
+      }
+
+      .story-subtitle {
+        font-size: clamp(0.64rem, 2.5vw, 0.78rem);
+        letter-spacing: 0.32em;
+        padding-left: 0.32em;
+        margin-top: 8px;
+        gap: 8px;
+      }
+
+      .story-subtitle::before,
+      .story-subtitle::after {
+        width: 14px;
+      }
+
+      .photo-wrapper {
+        top: 58%;
+      }
+
+      .profile-photo {
+        height: clamp(230px, 41vh, 340px);
+        max-width: 88vw;
+      }
+
+      .bottom-bar {
+        bottom: clamp(14px, 2.5vh, 24px);
+        width: auto;
+        max-width: 94vw;
+        gap: 10px;
+      }
+
+      .role-tagline {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        padding: 6px 18px;
+        border-radius: 16px;
+        max-width: 92vw;
+        text-align: center;
+        white-space: normal;
+        background: rgba(14, 14, 14, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.85), 0 0 15px rgba(229, 9, 20, 0.15);
+      }
+
+      .role-divider {
+        display: none !important;
+      }
+
+      .role-primary {
+        font-size: clamp(0.7rem, 3.1vw, 0.82rem);
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: #FFFFFF;
+        line-height: 1.25;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .role-secondary {
+        font-size: clamp(0.58rem, 2.5vw, 0.7rem);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: #D6D6D6;
+        line-height: 1.25;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .play-btn {
+        padding: 10px 32px;
+        font-size: 0.95rem;
+      }
+    }
+
+    /* Subtitle entrance */
+    @keyframes subtitleReveal {
+      0% {
+        opacity: 0;
+        transform: translateY(14px);
+        letter-spacing: 0.55em;
+      }
+      100% {
+        opacity: 0.95;
+        transform: translateY(0);
+        letter-spacing: 0.45em;
+      }
+    }
+
+    /* Photo entrance as name shifts up - appears in center */
+    @keyframes photoRevealCenter {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, calc(-50% + 40px)) scale(0.96);
+      }
+      100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    /* Bottom Bar Entrance */
+    @keyframes bottomBarReveal {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, 25px);
+      }
+      100% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+
+    /* ================= CUSTOM RED DOT CURSOR ================= */
+    html, body, a, button, input, select, [role="button"], * {
+      cursor: none !important;
+    }
+
+    .custom-cursor-dot {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 8px;
+      height: 8px;
+      background-color: #E50914;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999999;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 10px #E50914, 0 0 20px rgba(229, 9, 20, 0.85);
+      transition: transform 0.12s ease, opacity 0.2s ease;
+      opacity: 0;
+    }
+
+    .custom-cursor-ring {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 32px;
+      height: 32px;
+      border: 1.5px solid rgba(229, 9, 20, 0.6);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999998;
+      transform: translate(-50%, -50%);
+      transition: width 0.22s ease, height 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, opacity 0.2s ease;
+      opacity: 0;
+    }
+
+    /* Ambient Bright Red Trailing Light (Cursor Glow) */
+    .custom-cursor-glow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999990;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(
+        circle,
+        rgba(229, 9, 20, 0.22) 0%,
+        rgba(229, 9, 20, 0.12) 30%,
+        rgba(229, 9, 20, 0.04) 55%,
+        rgba(229, 9, 20, 0) 70%
+      );
+      filter: blur(14px);
+      opacity: 0;
+      transition: opacity 0.25s ease, transform 0.2s ease;
+      will-change: left, top;
+    }
+
+    body.cursor-hover .custom-cursor-glow {
+      transform: translate(-50%, -50%) scale(1.15);
+      background: radial-gradient(
+        circle,
+        rgba(229, 9, 20, 0.30) 0%,
+        rgba(229, 9, 20, 0.16) 30%,
+        rgba(229, 9, 20, 0.05) 55%,
+        rgba(229, 9, 20, 0) 70%
+      );
+    }
+
+    body.cursor-active .custom-cursor-glow {
+      transform: translate(-50%, -50%) scale(0.9);
+      filter: blur(10px);
+    }
+
+    body.cursor-hover .custom-cursor-ring {
+      width: 46px;
+      height: 46px;
+      border-color: #E50914;
+      background-color: rgba(229, 9, 20, 0.12);
+      box-shadow: 0 0 14px rgba(229, 9, 20, 0.4);
+    }
+
+    body.cursor-hover .custom-cursor-dot {
+      transform: translate(-50%, -50%) scale(1.35);
+      box-shadow: 0 0 16px #ff1a26;
+    }
+
+    body.cursor-active .custom-cursor-dot {
+      transform: translate(-50%, -50%) scale(0.65);
+    }
+
+    body.cursor-active .custom-cursor-ring {
+      transform: translate(-50%, -50%) scale(0.85);
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+      html, body, a, button, input, select, [role="button"], * {
+        cursor: auto !important;
+      }
+      .custom-cursor-dot, .custom-cursor-ring, .custom-cursor-glow {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Custom Red Dot Cursor Elements -->
+  <div class="custom-cursor-glow" id="cursorGlow"></div>
+  <div class="custom-cursor-ring" id="cursorRing"></div>
+  <div class="custom-cursor-dot" id="cursorDot"></div>
+  <div class="vignette"></div>
+  <div class="flash-overlay" id="flash"></div>
+  <canvas id="ribbonCanvas"></canvas>
+
+  <!-- A Comrade Original Intro (0.25s) -->
+  <div class="comrade-intro animate" id="comradeIntro">
+    <div class="intro-badge">
+      <span class="intro-prefix" id="introPrefix">A</span>
+      <span class="intro-brand" id="introBrand">AshWorks</span>
+      <span class="intro-suffix" id="introSuffix">ORIGINAL</span>
+    </div>
+  </div>
+
+  <!-- Top Left Brand Pill -->
+  <div class="top-brand-pill">
+    <span class="top-brand-logo" id="introTopLogo">AshWorks</span>
+    <span class="top-brand-tag" id="introTopTag">PORTFOLIO</span>
+  </div>
+
+  <!-- Top Right Netflix Profile Avatar -->
+  <a href="index.html" class="top-profile-link" title="Enter Portfolio">
+    <img src="images/ashish_avatar.jpg" alt="Profile" class="top-profile-thumb" id="topProfileThumb" />
+    <span class="top-profile-name" id="topProfileName">Portfolio</span>
+    <span class="top-profile-arrow">▾</span>
+  </a>
+
+  <!-- Header: Name + Subtitle (Strictly Below Name) -->
+  <div class="brand-header animate" id="brandHeader" title="Click anywhere to replay">
+    <div class="name-container" id="nameContainer">
+      <div class="half from-left animate" id="titlePart1"></div>
+      <div class="half from-right animate" id="titlePart2"></div>
+    </div>
+    <div class="story-subtitle animate" id="storySubtitle"></div>
+  </div>
+
+  <!-- Transparent Photo with Highlighted Outlines (Centered with Text) -->
+  <div class="photo-wrapper animate" id="photoWrapper">
+    <img src="images/default_avatar.svg" alt="Profile" class="profile-photo" id="profilePhoto" />
+  </div>
+
+  <!-- Bottom Action Bar (Tagline + Play Button with Rounded Corners) -->
+  <div class="bottom-bar animate" id="bottomBar">
+    <div class="role-tagline">
+      <span class="role-primary" id="rolePrimary"></span>
+      <span class="role-divider" id="roleDivider" style="display:none;">•</span>
+      <span class="role-secondary" id="roleSecondary"></span>
+    </div>
+    <button class="play-btn" id="playBtn" title="Play">
+      <svg class="play-icon" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+      <span id="playBtnLabel">Play</span>
+    </button>
+  </div>
+
+  <script>
+    const brandHeader = document.getElementById('brandHeader');
+    const container = document.getElementById('nameContainer');
+    const storySubtitle = document.getElementById('storySubtitle');
+    const photoWrapper = document.getElementById('photoWrapper');
+    const bottomBar = document.getElementById('bottomBar');
+    const playBtn = document.getElementById('playBtn');
+    const flash = document.getElementById('flash');
+    const comradeIntro = document.getElementById('comradeIntro');
+    const canvas = document.getElementById('ribbonCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let ribbons = [];
+    let animationFrameId;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function createRibbons() {
+      ribbons = [];
+      const ribbonCount = 50;
+      const centerX = window.innerWidth / 2;
+      const spread = Math.max(container.getBoundingClientRect().width * 0.95, 320);
+
+      for (let i = 0; i < ribbonCount; i++) {
+        const x = centerX + (Math.random() - 0.5) * spread;
+        ribbons.push({
+          x: x,
+          width: Math.random() * 5 + 2,
+          alpha: Math.random() * 0.8 + 0.3,
+          decay: Math.random() * 0.03 + 0.02
+        });
+      }
+    }
+
+    function drawRibbons() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = false;
+
+      ribbons.forEach(r => {
+        if (r.alpha > 0.01) {
+          alive = true;
+          ctx.save();
+          const gradient = ctx.createLinearGradient(r.x, 0, r.x, canvas.height);
+          gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+          gradient.addColorStop(0.5, `rgba(255, 255, 255, ${r.alpha})`);
+          gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+          ctx.fillStyle = gradient;
+          ctx.fillRect(r.x - r.width / 2, 0, r.width, canvas.height);
+          ctx.restore();
+
+          r.alpha -= r.decay;
+        }
+      });
+
+      if (alive) {
+        animationFrameId = requestAnimationFrame(drawRibbons);
+      }
+    }
+
+    // Comrade "Ta-Dum" Sound
+    function playTaDum(delay = 0) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const audioCtx = new AudioContext();
+        const now = audioCtx.currentTime + delay;
+
+        // 1. "TA" - Fast punch on impact
+        const taOsc = audioCtx.createOscillator();
+        const taGain = audioCtx.createGain();
+        taOsc.type = 'sine';
+        taOsc.frequency.setValueAtTime(120, now);
+        taOsc.frequency.exponentialRampToValueAtTime(40, now + 0.14);
+
+        taGain.gain.setValueAtTime(0.75, now);
+        taGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+        taOsc.connect(taGain);
+        taGain.connect(audioCtx.destination);
+        taOsc.start(now);
+        taOsc.stop(now + 0.18);
+
+        // 2. "DUM" - Deep cinematic booming swell
+        const dumTime = now + 0.14;
+        const dumOsc = audioCtx.createOscillator();
+        const dumGain = audioCtx.createGain();
+        dumOsc.type = 'triangle';
+        dumOsc.frequency.setValueAtTime(80, dumTime);
+        dumOsc.frequency.exponentialRampToValueAtTime(32, dumTime + 0.8);
+
+        dumGain.gain.setValueAtTime(0.001, dumTime);
+        dumGain.gain.linearRampToValueAtTime(0.85, dumTime + 0.04);
+        dumGain.gain.exponentialRampToValueAtTime(0.001, dumTime + 2.0);
+
+        dumOsc.connect(dumGain);
+        dumGain.connect(audioCtx.destination);
+        dumOsc.start(dumTime);
+        dumOsc.stop(dumTime + 2.0);
+      } catch (e) {
+        // Fallback
+      }
+    }
+
+    function triggerAnimation(withAudio = false) {
+      if (withAudio) {
+        playTaDum(1.0);
+      }
+
+      const left = container.querySelector('.from-left');
+      const right = container.querySelector('.from-right');
+
+      comradeIntro.classList.remove('animate');
+      brandHeader.classList.remove('animate');
+      left.classList.remove('animate');
+      right.classList.remove('animate');
+      flash.classList.remove('animate');
+      storySubtitle.classList.remove('animate');
+      photoWrapper.classList.remove('animate');
+      bottomBar.classList.remove('animate');
+
+      void comradeIntro.offsetWidth; // Reflow
+      void brandHeader.offsetWidth;
+      void left.offsetWidth;
+      void right.offsetWidth;
+      void flash.offsetWidth;
+      void storySubtitle.offsetWidth;
+      void photoWrapper.offsetWidth;
+      void bottomBar.offsetWidth;
+
+      comradeIntro.classList.add('animate');
+      brandHeader.classList.add('animate');
+      left.classList.add('animate');
+      right.classList.add('animate');
+      flash.classList.add('animate');
+      storySubtitle.classList.add('animate');
+      photoWrapper.classList.add('animate');
+      bottomBar.classList.add('animate');
+
+      // Trigger ribbons right at collision impact (after 1.0s intro + 0.24s travel)
+      setTimeout(() => {
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        createRibbons();
+        drawRibbons();
+      }, 1240);
+    }
+
+    // Play button click -> Navigates to main portfolio page (index.html)
+    playBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playTaDum(0);
+      
+      // Cinematic blackout transition
+      flash.style.transition = 'opacity 0.45s ease';
+      flash.style.backgroundColor = '#141414';
+      flash.style.opacity = '1';
+
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 450);
+    });
+
+    // Dynamic data hydration & live sync
+    function applyIndexData(data) {
+      if (!data) return;
+      const intro = data.intro || {};
+      const profile = data.profile || {};
+
+      const prefix = document.getElementById('introPrefix');
+      if (prefix) prefix.textContent = intro.badgePrefix || 'A';
+
+      const brand = document.getElementById('introBrand');
+      if (brand) brand.textContent = intro.badgeBrand || profile.brandLogo || 'AshWorks';
+
+      const suffix = document.getElementById('introSuffix');
+      if (suffix) suffix.textContent = intro.badgeSuffix || 'ORIGINAL';
+
+      const topLogo = document.getElementById('introTopLogo');
+      if (topLogo) topLogo.textContent = intro.topLogo || profile.brandLogo || 'AshWorks';
+
+      const topTag = document.getElementById('introTopTag');
+      if (topTag) topTag.textContent = intro.topTag || 'PORTFOLIO';
+
+      // Split Title Collision Name
+      let p1Val = intro.titlePart1;
+      let p2Val = intro.titlePart2;
+      const fullName = (intro.userName || profile.name || '').trim();
+      if ((!p1Val || !p2Val) && fullName) {
+        const mid = Math.ceil(fullName.length / 2);
+        p1Val = p1Val || fullName.substring(0, mid);
+        p2Val = p2Val || fullName.substring(mid);
+      }
+
+      const p1 = document.getElementById('titlePart1');
+      if (p1) p1.textContent = p1Val || '';
+
+      const p2 = document.getElementById('titlePart2');
+      if (p2) p2.textContent = p2Val || '';
+
+      const sub = document.getElementById('storySubtitle');
+      if (sub) sub.textContent = intro.storySubtitle || profile.storySubtitle || '';
+
+      const photo = document.getElementById('profilePhoto');
+      if (photo) {
+        photo.src = intro.photo || profile.avatarImage || profile.heroImage || 'images/default_avatar.svg';
+      }
+
+      const r1 = document.getElementById('rolePrimary');
+      const r1Val = intro.rolePrimary || profile.match || profile.rolePrimary || '';
+      if (r1) r1.textContent = r1Val;
+
+      const r2 = document.getElementById('roleSecondary');
+      const r2Val = intro.roleSecondary || profile.roleSecondary || '';
+      if (r2) r2.textContent = r2Val;
+
+      const rDiv = document.getElementById('roleDivider');
+      if (rDiv) rDiv.style.display = (r1Val && r2Val) ? 'inline' : 'none';
+
+      const playLabel = document.getElementById('playBtnLabel');
+      if (playLabel) playLabel.textContent = intro.playBtnText || profile.btn1Text || 'Explore Work';
+
+      const topThumb = document.getElementById('topProfileThumb');
+      if (topThumb && (profile.avatarImage || intro.photo)) {
+        topThumb.src = profile.avatarImage || intro.photo;
+      }
+
+      const topName = document.getElementById('topProfileName');
+      if (topName) topName.textContent = profile.name || intro.userName || 'Ashish';
+    }
+
+    function openIDB() {
+      return new Promise((resolve) => {
+        if (!window.indexedDB) return resolve(null);
+        const req = indexedDB.open('ComradePortfolioDB', 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('store')) db.createObjectStore('store');
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    async function getIDB(key) {
+      try {
+        const db = await openIDB();
+        if (!db) return null;
+        return new Promise((resolve) => {
+          const tx = db.transaction('store', 'readonly');
+          const req = tx.objectStore('store').get(key);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch(e) { return null; }
+    }
+
+    async function loadIndexData() {
+      // 0. Immediate synchronous pre-render (Zero Flicker)
+      let initial = null;
+      try {
+        const stored = localStorage.getItem('comrade_portfolio_data');
+        if (stored) initial = JSON.parse(stored);
+      } catch(e) {}
+      if (!initial && window.DEFAULT_PORTFOLIO_DATA) initial = window.DEFAULT_PORTFOLIO_DATA;
+      if (initial) applyIndexData(initial);
+
+      let diskData = null;
+      try {
+        const res = await fetch('/api/data?v=' + Date.now());
+        if (res.ok) diskData = await res.json();
+      } catch (e) {
+        try {
+          const res2 = await fetch('data.json?v=' + Date.now());
+          if (res2.ok) diskData = await res2.json();
+        } catch (e2) {}
+      }
+
+      let localData = null;
+      try {
+        const stored = localStorage.getItem('comrade_portfolio_data');
+        if (stored) localData = JSON.parse(stored);
+      } catch (e) {}
+
+      let idbData = null;
+      try {
+        idbData = await getIDB('comrade_portfolio_data');
+      } catch(e) {}
+
+      let data = null;
+      if (diskData && localData) {
+        const diskTime = diskData.updatedAt ? new Date(diskData.updatedAt).getTime() : 0;
+        const localTime = localData.updatedAt ? new Date(localData.updatedAt).getTime() : 0;
+        data = (diskTime >= localTime) ? diskData : localData;
+      } else {
+        data = diskData || localData || idbData;
+      }
+
+      if (!data && window.DEFAULT_PORTFOLIO_DATA) {
+        data = window.DEFAULT_PORTFOLIO_DATA;
+      }
+
+      if (data) applyIndexData(data);
+    }
+
+    // Cross-tab real-time sync
+    if (typeof BroadcastChannel !== 'undefined') {
+      const syncChannel = new BroadcastChannel('comrade_portfolio_sync');
+      syncChannel.onmessage = (event) => {
+        if (event.data && (event.data.type === 'PORTFOLIO_UPDATE' || event.data.type === 'SYNC_UPDATE')) {
+          applyIndexData(event.data.data);
+        }
+      };
+    }
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'comrade_portfolio_data' && e.newValue) {
+        try { applyIndexData(JSON.parse(e.newValue)); } catch(err){}
+      }
+    });
+
+    // Auto-play immediately on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadIndexData();
+      triggerAnimation(false);
+    });
+
+    // Replay with sound on user click or keypress
+    document.body.addEventListener('click', () => {
+      triggerAnimation(true);
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'Enter') {
+        triggerAnimation(true);
+      }
+    });
+
+    // ================= CUSTOM RED DOT CURSOR LOGIC =================
+    (function initCustomCursor() {
+      const dot = document.getElementById('cursorDot');
+      const ring = document.getElementById('cursorRing');
+      const glow = document.getElementById('cursorGlow');
+      if (!dot || !ring) return;
+
+      let mouseX = -200;
+      let mouseY = -200;
+      let ringX = -200;
+      let ringY = -200;
+      let glowX = -200;
+      let glowY = -200;
+      let isVisible = false;
+
+      window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        
+        dot.style.left = mouseX + 'px';
+        dot.style.top = mouseY + 'px';
+
+        if (!isVisible) {
+          dot.style.opacity = '1';
+          ring.style.opacity = '1';
+          if (glow) glow.style.opacity = '1';
+          ringX = mouseX;
+          ringY = mouseY;
+          glowX = mouseX;
+          glowY = mouseY;
+          isVisible = true;
+        }
+      });
+
+      document.addEventListener('mouseleave', () => {
+        dot.style.opacity = '0';
+        ring.style.opacity = '0';
+        if (glow) glow.style.opacity = '0';
+        isVisible = false;
+      });
+
+      document.addEventListener('mouseenter', () => {
+        dot.style.opacity = '1';
+        ring.style.opacity = '1';
+        if (glow) glow.style.opacity = '1';
+        isVisible = true;
+      });
+
+      function animateCursor() {
+        ringX += (mouseX - ringX) * 0.24;
+        ringY += (mouseY - ringY) * 0.24;
+        ring.style.left = ringX + 'px';
+        ring.style.top = ringY + 'px';
+
+        if (glow) {
+          glowX += (mouseX - glowX) * 0.12;
+          glowY += (mouseY - glowY) * 0.12;
+          glow.style.left = glowX + 'px';
+          glow.style.top = glowY + 'px';
+        }
+
+        requestAnimationFrame(animateCursor);
+      }
+      requestAnimationFrame(animateCursor);
+
+      window.addEventListener('mousedown', () => {
+        document.body.classList.add('cursor-active');
+      });
+      window.addEventListener('mouseup', () => {
+        document.body.classList.remove('cursor-active');
+      });
+
+      const interactiveTargets = 'a, button, .top-profile-link, .btn-action-primary, [role="button"]';
+      document.addEventListener('mouseover', (e) => {
+        if (e.target.closest(interactiveTargets)) {
+          document.body.classList.add('cursor-hover');
+        }
+      });
+      document.addEventListener('mouseout', (e) => {
+        if (e.target.closest(interactiveTargets)) {
+          document.body.classList.remove('cursor-hover');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
