@@ -1,13 +1,15 @@
 # 🎬 AshWorks — Netflix-Style Cinematic Portfolio
 
-[![Firebase Hosting](https://img.shields.io/badge/Hosted%20On-Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://comrade-portfolio-af0e9.web.app)
+[![Website](https://img.shields.io/badge/Official%20Site-ashworks.space-E50914?style=for-the-badge&logo=google-chrome&logoColor=white)](https://ashworks.space)
+[![Firebase Hosting](https://img.shields.io/badge/Hosted%20On-Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://ashworks.space)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](#)
 [![CSS3](https://img.shields.io/badge/CSS3-Modern%20Grid%20%26%20Animations-1572B6?style=for-the-badge&logo=css3&logoColor=white)](#)
 [![License: ISC](https://img.shields.io/badge/License-ISC-red.svg?style=for-the-badge)](#)
 
 A high-performance, Netflix-inspired interactive developer portfolio designed and built for **Ashish Singh** — Front-End Developer & Management & Data Science student at **IIT Madras**.
 
-🔗 **Live Website:** [https://comrade-portfolio-af0e9.web.app](https://comrade-portfolio-af0e9.web.app)  
+🌐 **Official Website:** [https://ashworks.space](https://ashworks.space)  
+🔗 **Mirror / App URL:** [https://comrade-portfolio-af0e9.web.app](https://comrade-portfolio-af0e9.web.app)  
 👤 **Portfolio Lead:** [Ashish Singh](https://linkedin.com/in/ashish-singh-993689312)  
 🐙 **GitHub:** [@ashusingh06](https://github.com/ashusingh06)
 
